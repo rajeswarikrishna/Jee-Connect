@@ -349,7 +349,7 @@ class AnalyticsServiceClass {
     // SMS gateway for parent alerts (Routes via Firebase Cloud Functions or local bridge server)
     async sendParentSMSAlert(phoneNumber: string, message: string): Promise<boolean> {
         try {
-            const functionUrl = process.env.EXPO_PUBLIC_SMS_FUNCTION_URL || 'http://localhost:9000/send-sms';
+            const functionUrl = process.env.EXPO_PUBLIC_SMS_FUNCTION_URL || 'https://jee-connect-sms.onrender.com/send-sms';
             console.log(`[SMS] Sending to ${phoneNumber} via ${functionUrl}...`);
             
             const response = await fetch(functionUrl, {

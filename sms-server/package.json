@@ -1,0 +1,12 @@
+{
+  "name": "jee-connect-sms-server",
+  "version": "1.0.0",
+  "description": "SMS relay server for JEE Connect Parent Alerts",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
