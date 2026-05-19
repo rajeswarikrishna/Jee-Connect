@@ -483,7 +483,7 @@ export const SEED_CHAPTERS = [
 export const SEED_QUESTIONS = [
   // ─── PHYSICS ───
   {
-    id: 'pyq-phy-2024-1', chapter_id: 'phy-mech-kinematics', year: 2024, shift: 'Morning', question_type: 'mcq',
+    id: 'pyq-phy-2024-1', chapter_id: 'phy-mech-kinematics', year: 2025, shift: 'Morning', question_type: 'mcq',
     question_text: 'A particle moves along a straight line such that its displacement at any time t is given by s = t³ - 6t² + 3t + 4. The velocity when the acceleration is zero is:',
     question_latex: 's = t^3 - 6t^2 + 3t + 4', options: JSON.stringify(['A) -9 m/s', 'B) -12 m/s', 'C) 3 m/s', 'D) 42 m/s']),
     correct_answers: JSON.stringify(['A']), solution_text: 'a = 6t - 12 = 0 → t = 2. v = 3t² - 12t + 3 = 12 - 24 + 3 = -9 m/s',
@@ -491,7 +491,7 @@ export const SEED_QUESTIONS = [
   },
 
   {
-    id: 'pyq-phy-2024-2', chapter_id: 'phy-mech-kinematics', year: 2024, shift: 'Evening', question_type: 'mcq',
+    id: 'pyq-phy-2024-2', chapter_id: 'phy-mech-kinematics', year: 2025, shift: 'Evening', question_type: 'mcq',
     question_text: 'A ball is thrown vertically upward with velocity 20 m/s from the top of a building 40 m high. The time after which the ball hits the ground is (g = 10 m/s²):',
     question_latex: null, options: JSON.stringify(['A) 2 s', 'B) 4 s', 'C) 2(1+√2) s', 'D) 2+2√2 s']),
     correct_answers: JSON.stringify(['B']), solution_text: '-40 = 20t - 5t². 5t² - 20t - 40 = 0. t² - 4t - 8 = 0. t = (4+√48)/2 = 4s (taking positive root)',
@@ -499,7 +499,7 @@ export const SEED_QUESTIONS = [
   },
 
   {
-    id: 'pyq-phy-2023-1', chapter_id: 'phy-mech-laws', year: 2023, shift: 'Morning', question_type: 'mcq',
+    id: 'pyq-phy-2023-1', chapter_id: 'phy-mech-laws', year: 2024, shift: 'Morning', question_type: 'mcq',
     question_text: 'Two blocks of masses 5 kg and 10 kg are connected by a string passing over a frictionless pulley. The acceleration of the system is (g = 10 m/s²):',
     question_latex: null, options: JSON.stringify(['A) 10/3 m/s²', 'B) 5/3 m/s²', 'C) g/3 m/s²', 'D) g/6 m/s²']),
     correct_answers: JSON.stringify(['C']), solution_text: 'a = (m₂-m₁)g/(m₁+m₂) = (10-5)×10/(10+5) = 50/15 = 10/3 = g/3 m/s²',
@@ -507,7 +507,7 @@ export const SEED_QUESTIONS = [
   },
 
   {
-    id: 'pyq-phy-2023-2', chapter_id: 'phy-mech-work', year: 2023, shift: 'Evening', question_type: 'mcq',
+    id: 'pyq-phy-2023-2', chapter_id: 'phy-mech-work', year: 2024, shift: 'Evening', question_type: 'mcq',
     question_text: 'A body of mass 2 kg has kinetic energy 8 J. A constant force of 4 N is applied on it in the direction of motion. The kinetic energy after 3 m displacement is:',
     question_latex: null, options: JSON.stringify(['A) 20 J', 'B) 12 J', 'C) 16 J', 'D) 24 J']),
     correct_answers: JSON.stringify(['A']), solution_text: 'Work = Fd = 4×3 = 12J. Final KE = initial KE + Work = 8 + 12 = 20 J',
@@ -515,7 +515,7 @@ export const SEED_QUESTIONS = [
   },
 
   {
-    id: 'pyq-phy-2023-3', chapter_id: 'phy-electro-electrostatics', year: 2023, shift: 'Morning', question_type: 'mcq',
+    id: 'pyq-phy-2023-3', chapter_id: 'phy-electro-electrostatics', year: 2024, shift: 'Morning', question_type: 'mcq',
     question_text: 'Two point charges +3μC and -3μC are placed 20 cm apart. The electric potential at the midpoint of the line joining them is:',
     question_latex: null, options: JSON.stringify(['A) 0 V', 'B) 2.7 × 10⁵ V', 'C) -2.7 × 10⁵ V', 'D) 5.4 × 10⁵ V']),
     correct_answers: JSON.stringify(['A']), solution_text: 'At midpoint, distance from each charge = 10 cm. V = kq₁/r + kq₂/r = k(3-3)/0.1 = 0',
@@ -524,7 +524,7 @@ export const SEED_QUESTIONS = [
 
   // ─── CHEMISTRY ───
   {
-    id: 'pyq-chem-2024-1', chapter_id: 'chem-phys-equilibrium', year: 2024, shift: 'Morning', question_type: 'numerical',
+    id: 'pyq-chem-2024-1', chapter_id: 'chem-phys-equilibrium', year: 2025, shift: 'Morning', question_type: 'numerical',
     question_text: 'For N₂(g) + 3H₂(g) ⇌ 2NH₃(g), if Kp = 1.6 × 10⁻⁴ at 400°C, find Kc. (R = 0.0821). Answer in × 10⁻².',
     question_latex: 'K_p = 1.6 \\times 10^{-4}', options: JSON.stringify(null),
     correct_answers: JSON.stringify(['49']), solution_text: 'Kc = Kp(RT)^(-Δn) = 1.6×10⁻⁴ × (0.0821×673)² ≈ 0.49 → 49×10⁻²',
@@ -532,7 +532,7 @@ export const SEED_QUESTIONS = [
   },
 
   {
-    id: 'pyq-chem-2024-2', chapter_id: 'chem-phys-mole', year: 2024, shift: 'Evening', question_type: 'mcq',
+    id: 'pyq-chem-2024-2', chapter_id: 'chem-phys-mole', year: 2025, shift: 'Evening', question_type: 'mcq',
     question_text: 'How many moles of electrons are required for the reduction of 1 mole of Cr₂O₇²⁻ to Cr³⁺?',
     question_latex: null, options: JSON.stringify(['A) 3', 'B) 6', 'C) 2', 'D) 7']),
     correct_answers: JSON.stringify(['B']), solution_text: 'Cr₂O₇²⁻ → 2Cr³⁺. Each Cr goes from +6 to +3 (gains 3e⁻). Two Cr atoms → 6 electrons total.',
@@ -540,7 +540,7 @@ export const SEED_QUESTIONS = [
   },
 
   {
-    id: 'pyq-chem-2023-1', chapter_id: 'chem-org-basics', year: 2023, shift: 'Morning', question_type: 'mcq',
+    id: 'pyq-chem-2023-1', chapter_id: 'chem-org-basics', year: 2024, shift: 'Morning', question_type: 'mcq',
     question_text: 'Which of the following carbocations is most stable?',
     question_latex: null, options: JSON.stringify(['A) CH₃⁺', 'B) (CH₃)₂CH⁺', 'C) (CH₃)₃C⁺', 'D) C₂H₅⁺']),
     correct_answers: JSON.stringify(['C']), solution_text: 'Tertiary carbocation (CH₃)₃C⁺ is most stable due to +I effect of 3 methyl groups and hyperconjugation.',
@@ -548,7 +548,7 @@ export const SEED_QUESTIONS = [
   },
 
   {
-    id: 'pyq-chem-2023-2', chapter_id: 'chem-inorg-periodic', year: 2023, shift: 'Evening', question_type: 'mcq',
+    id: 'pyq-chem-2023-2', chapter_id: 'chem-inorg-periodic', year: 2024, shift: 'Evening', question_type: 'mcq',
     question_text: 'Among Li, Na, K, Rb, which has the highest ionization energy?',
     question_latex: null, options: JSON.stringify(['A) Li', 'B) Na', 'C) K', 'D) Rb']),
     correct_answers: JSON.stringify(['A']), solution_text: 'IE decreases down a group. Li is smallest, most electronegative → highest IE in Group 1.',
@@ -556,7 +556,7 @@ export const SEED_QUESTIONS = [
   },
 
   {
-    id: 'pyq-chem-2022-1', chapter_id: 'chem-phys-kinetics', year: 2022, shift: 'Morning', question_type: 'mcq',
+    id: 'pyq-chem-2022-1', chapter_id: 'chem-phys-kinetics', year: 2023, shift: 'Morning', question_type: 'mcq',
     question_text: 'For a first-order reaction, the half-life is 693 seconds. The rate constant is:',
     question_latex: null, options: JSON.stringify(['A) 10⁻³ s⁻¹', 'B) 10⁻² s⁻¹', 'C) 0.693 s⁻¹', 'D) 1.44 × 10⁻³ s⁻¹']),
     correct_answers: JSON.stringify(['A']), solution_text: 'For first order: t₁/₂ = 0.693/k → k = 0.693/693 = 10⁻³ s⁻¹',
@@ -565,7 +565,7 @@ export const SEED_QUESTIONS = [
 
   // ─── MATHEMATICS ───
   {
-    id: 'pyq-math-2024-1', chapter_id: 'math-calc-differentiation', year: 2024, shift: 'Evening', question_type: 'multi_answer',
+    id: 'pyq-math-2024-1', chapter_id: 'math-calc-differentiation', year: 2025, shift: 'Evening', question_type: 'multi_answer',
     question_text: 'If f(x) = x³ - 3x² + 3x - 1, which of the following are true?',
     question_latex: 'f(x) = (x-1)^3', options: JSON.stringify(["A) f(1) = 0", "B) f'(1) = 0", "C) f''(1) = 0", "D) f has a point of inflection at x=1"]),
     correct_answers: JSON.stringify(['A', 'B', 'C', 'D']), solution_text: "f(x)=(x-1)³. f(1)=0 ✓. f'(x)=3(x-1)², f'(1)=0 ✓. f''(x)=6(x-1), f''(1)=0 ✓. Inflection ✓",
@@ -573,7 +573,7 @@ export const SEED_QUESTIONS = [
   },
 
   {
-    id: 'pyq-math-2024-2', chapter_id: 'math-alg-quadratic', year: 2024, shift: 'Morning', question_type: 'mcq',
+    id: 'pyq-math-2024-2', chapter_id: 'math-alg-quadratic', year: 2025, shift: 'Morning', question_type: 'mcq',
     question_text: 'If α, β are roots of x² - 5x + 6 = 0, the value of α³ + β³ is:',
     question_latex: null, options: JSON.stringify(['A) 35', 'B) 65', 'C) 125', 'D) 45']),
     correct_answers: JSON.stringify(['A']), solution_text: 'α+β=5, αβ=6. α³+β³ = (α+β)³ - 3αβ(α+β) = 125 - 3(6)(5) = 125 - 90 = 35',
@@ -581,7 +581,7 @@ export const SEED_QUESTIONS = [
   },
 
   {
-    id: 'pyq-math-2023-1', chapter_id: 'math-calc-integration', year: 2023, shift: 'Morning', question_type: 'mcq',
+    id: 'pyq-math-2023-1', chapter_id: 'math-calc-integration', year: 2024, shift: 'Morning', question_type: 'mcq',
     question_text: 'The value of ∫₀^π sin²x dx is:',
     question_latex: '\\int_0^{\\pi} \\sin^2 x\\, dx', options: JSON.stringify(['A) π/2', 'B) π', 'C) π/4', 'D) 2π']),
     correct_answers: JSON.stringify(['A']), solution_text: '∫sin²x dx = ∫(1-cos2x)/2 dx = x/2 - sin2x/4. At π: π/2 - 0 = π/2. At 0: 0. Answer = π/2',
@@ -589,7 +589,7 @@ export const SEED_QUESTIONS = [
   },
 
   {
-    id: 'pyq-math-2023-2', chapter_id: 'math-trig-functions', year: 2023, shift: 'Evening', question_type: 'mcq',
+    id: 'pyq-math-2023-2', chapter_id: 'math-trig-functions', year: 2024, shift: 'Evening', question_type: 'mcq',
     question_text: 'If sin A + sin B = 1 and cos A + cos B = 0, then the value of 12 cos 2A + 4 cos 2B is:',
     question_latex: null, options: JSON.stringify(['A) -4', 'B) 4', 'C) -7', 'D) 7']),
     correct_answers: JSON.stringify(['C']), solution_text: 'cosA = -cosB → A+B=π → B=π-A. sinA+sin(π-A)=1 → 2sinA=1 → A=π/6,B=5π/6. 12cos(π/3)+4cos(5π/3) = 12(1/2)+4(1/2) = -6-1=-7',
@@ -597,7 +597,7 @@ export const SEED_QUESTIONS = [
   },
 
   {
-    id: 'pyq-math-2022-1', chapter_id: 'math-prob-probability', year: 2022, shift: 'Morning', question_type: 'mcq',
+    id: 'pyq-math-2022-1', chapter_id: 'math-prob-probability', year: 2023, shift: 'Morning', question_type: 'mcq',
     question_text: 'A bag contains 5 red and 3 blue balls. Two balls are drawn at random without replacement. The probability that both are red is:',
     question_latex: null, options: JSON.stringify(['A) 5/14', 'B) 5/28', 'C) 25/64', 'D) 10/28']),
     correct_answers: JSON.stringify(['A']), solution_text: 'P = (5/8)(4/7) = 20/56 = 5/14',
@@ -606,7 +606,7 @@ export const SEED_QUESTIONS = [
 
   // ─── MORE PHYSICS (JEE Main Standard) ───
   {
-    id: 'pyq-phy-2024-3', chapter_id: 'phy-thermo-laws', year: 2024, shift: 'Morning', question_type: 'mcq',
+    id: 'pyq-phy-2024-3', chapter_id: 'phy-thermo-laws', year: 2025, shift: 'Morning', question_type: 'mcq',
     question_text: 'An ideal gas undergoes an isothermal expansion at 300 K. If the volume doubles, the work done by 2 moles of gas is (R = 8.314 J/mol·K):',
     question_latex: 'W = nRT\\ln(V_2/V_1)', options: JSON.stringify(['A) 3456 J', 'B) 2456 J', 'C) 1728 J', 'D) 4988 J']),
     correct_answers: JSON.stringify(['A']), solution_text: 'W = nRT·ln(V₂/V₁) = 2 × 8.314 × 300 × ln(2) = 4988.4 × 0.693 = 3456 J',
@@ -614,7 +614,7 @@ export const SEED_QUESTIONS = [
   },
 
   {
-    id: 'pyq-phy-2024-4', chapter_id: 'phy-optics-ray', year: 2024, shift: 'Evening', question_type: 'mcq',
+    id: 'pyq-phy-2024-4', chapter_id: 'phy-optics-ray', year: 2025, shift: 'Evening', question_type: 'mcq',
     question_text: 'A convex lens of focal length 20 cm produces a real image that is 3 times the size of the object. The object distance is:',
     question_latex: '\\frac{1}{v} - \\frac{1}{u} = \\frac{1}{f}', options: JSON.stringify(['A) -80/3 cm', 'B) -40/3 cm', 'C) -26.67 cm', 'D) -80/3 cm']),
     correct_answers: JSON.stringify(['A']), solution_text: 'For real image m = -v/u = -3, so v = 3u (but v is positive). u = -u₀, v = 3u₀. 1/(3u₀) + 1/u₀ = 1/20. 4/(3u₀) = 1/20. u₀ = 80/3 cm.',
@@ -622,7 +622,7 @@ export const SEED_QUESTIONS = [
   },
 
   {
-    id: 'pyq-phy-2023-4', chapter_id: 'phy-mech-kinematics', year: 2023, shift: 'Evening', question_type: 'numerical',
+    id: 'pyq-phy-2023-4', chapter_id: 'phy-mech-kinematics', year: 2024, shift: 'Evening', question_type: 'numerical',
     question_text: 'A projectile is launched at 60° to the horizontal with speed 40 m/s. The maximum height reached is ___ m. (Take g = 10 m/s²)',
     question_latex: 'H = \\frac{u^2 \\sin^2\\theta}{2g}', options: JSON.stringify(null),
     correct_answers: JSON.stringify(['60']), solution_text: 'H = u²sin²θ/(2g) = (40)²×sin²60°/(2×10) = 1600×(3/4)/20 = 1200/20 = 60 m',
@@ -630,7 +630,7 @@ export const SEED_QUESTIONS = [
   },
 
   {
-    id: 'pyq-phy-2022-1', chapter_id: 'phy-electro-electrostatics', year: 2022, shift: 'Evening', question_type: 'numerical',
+    id: 'pyq-phy-2022-1', chapter_id: 'phy-electro-electrostatics', year: 2023, shift: 'Evening', question_type: 'numerical',
     question_text: 'Three capacitors of 2μF, 3μF, and 6μF are connected in series. The equivalent capacitance in μF is ___.',
     question_latex: '\\frac{1}{C_{eq}} = \\frac{1}{C_1}+\\frac{1}{C_2}+\\frac{1}{C_3}', options: JSON.stringify(null),
     correct_answers: JSON.stringify(['1']), solution_text: '1/C = 1/2 + 1/3 + 1/6 = 3/6 + 2/6 + 1/6 = 6/6 = 1. C = 1 μF',
@@ -638,7 +638,7 @@ export const SEED_QUESTIONS = [
   },
 
   {
-    id: 'pyq-phy-2022-2', chapter_id: 'phy-mech-laws', year: 2022, shift: 'Morning', question_type: 'mcq',
+    id: 'pyq-phy-2022-2', chapter_id: 'phy-mech-laws', year: 2023, shift: 'Morning', question_type: 'mcq',
     question_text: 'A block of mass 10 kg is placed on a rough inclined plane of inclination 30°. If μ = 1/√3, the force required to just move the block up the incline is:',
     question_latex: null, options: JSON.stringify(['A) 100 N', 'B) 50√3 N', 'C) 100√3 N', 'D) 50 N']),
     correct_answers: JSON.stringify(['A']), solution_text: 'F = mg(sinθ + μcosθ) = 10×10(sin30° + (1/√3)cos30°) = 100(0.5 + 0.5) = 100 N',
@@ -647,7 +647,7 @@ export const SEED_QUESTIONS = [
 
   // ─── MORE CHEMISTRY (JEE Main Standard) ───
   {
-    id: 'pyq-chem-2024-3', chapter_id: 'chem-phys-kinetics', year: 2024, shift: 'Morning', question_type: 'mcq',
+    id: 'pyq-chem-2024-3', chapter_id: 'chem-phys-kinetics', year: 2025, shift: 'Morning', question_type: 'mcq',
     question_text: 'The rate of a reaction doubles when temperature increases from 27°C to 37°C. The activation energy of the reaction is approximately:',
     question_latex: null, options: JSON.stringify(['A) 53.6 kJ/mol', 'B) 26.8 kJ/mol', 'C) 107.2 kJ/mol', 'D) 80.4 kJ/mol']),
     correct_answers: JSON.stringify(['A']), solution_text: 'Using ln(k₂/k₁) = Ea/R × (1/T₁ - 1/T₂). ln2 = Ea/8.314 × (1/300 - 1/310). Ea ≈ 53.6 kJ/mol',
@@ -655,7 +655,7 @@ export const SEED_QUESTIONS = [
   },
 
   {
-    id: 'pyq-chem-2024-4', chapter_id: 'chem-org-basics', year: 2024, shift: 'Evening', question_type: 'mcq',
+    id: 'pyq-chem-2024-4', chapter_id: 'chem-org-basics', year: 2025, shift: 'Evening', question_type: 'mcq',
     question_text: 'The correct order of decreasing acidity of the following compounds is: (I) Phenol (II) p-Nitrophenol (III) p-Methylphenol (IV) p-Chlorophenol',
     question_latex: null, options: JSON.stringify(['A) II > IV > I > III', 'B) II > I > IV > III', 'C) IV > II > I > III', 'D) I > II > III > IV']),
     correct_answers: JSON.stringify(['A']), solution_text: 'p-NO₂ (strong -M,-I) > p-Cl (-I) > H > p-CH₃ (+I, decreases acidity). So II > IV > I > III.',
@@ -663,7 +663,7 @@ export const SEED_QUESTIONS = [
   },
 
   {
-    id: 'pyq-chem-2023-3', chapter_id: 'chem-phys-mole', year: 2023, shift: 'Morning', question_type: 'numerical',
+    id: 'pyq-chem-2023-3', chapter_id: 'chem-phys-mole', year: 2024, shift: 'Morning', question_type: 'numerical',
     question_text: 'How many grams of NaOH (molar mass = 40 g/mol) are needed to prepare 500 mL of 0.1 M solution?',
     question_latex: 'M = \\frac{n}{V(L)}', options: JSON.stringify(null),
     correct_answers: JSON.stringify(['2']), solution_text: 'n = M × V = 0.1 × 0.5 = 0.05 mol. Mass = 0.05 × 40 = 2 g',
@@ -671,7 +671,7 @@ export const SEED_QUESTIONS = [
   },
 
   {
-    id: 'pyq-chem-2022-2', chapter_id: 'chem-inorg-periodic', year: 2022, shift: 'Evening', question_type: 'mcq',
+    id: 'pyq-chem-2022-2', chapter_id: 'chem-inorg-periodic', year: 2023, shift: 'Evening', question_type: 'mcq',
     question_text: 'Which of the following has the highest electron affinity?',
     question_latex: null, options: JSON.stringify(['A) F', 'B) Cl', 'C) Br', 'D) I']),
     correct_answers: JSON.stringify(['B']), solution_text: 'Cl has higher EA than F because F is too small — incoming e⁻ faces inter-electronic repulsion. Cl has optimal size.',
@@ -679,7 +679,7 @@ export const SEED_QUESTIONS = [
   },
 
   {
-    id: 'pyq-chem-2022-3', chapter_id: 'chem-phys-equilibrium', year: 2022, shift: 'Morning', question_type: 'mcq',
+    id: 'pyq-chem-2022-3', chapter_id: 'chem-phys-equilibrium', year: 2023, shift: 'Morning', question_type: 'mcq',
     question_text: 'The pH of 0.001 M HCl solution is:',
     question_latex: 'pH = -\\log[H^+]', options: JSON.stringify(['A) 1', 'B) 2', 'C) 3', 'D) 4']),
     correct_answers: JSON.stringify(['C']), solution_text: 'HCl is a strong acid, fully ionized. [H⁺] = 0.001 = 10⁻³. pH = -log(10⁻³) = 3',
@@ -688,7 +688,7 @@ export const SEED_QUESTIONS = [
 
   // ─── MORE MATHEMATICS (JEE Main Standard) ───
   {
-    id: 'pyq-math-2024-3', chapter_id: 'math-coord-conics', year: 2024, shift: 'Morning', question_type: 'mcq',
+    id: 'pyq-math-2024-3', chapter_id: 'math-coord-conics', year: 2025, shift: 'Morning', question_type: 'mcq',
     question_text: 'The length of the latus rectum of the ellipse 9x² + 25y² = 225 is:',
     question_latex: '\\frac{x^2}{25} + \\frac{y^2}{9} = 1', options: JSON.stringify(['A) 18/5', 'B) 25/3', 'C) 9/5', 'D) 50/9']),
     correct_answers: JSON.stringify(['A']), solution_text: 'Dividing by 225: x²/25 + y²/9 = 1. So a²=25, b²=9. LR = 2b²/a = 2(9)/5 = 18/5',
@@ -696,7 +696,7 @@ export const SEED_QUESTIONS = [
   },
 
   {
-    id: 'pyq-math-2024-4', chapter_id: 'math-alg-matrices', year: 2024, shift: 'Evening', question_type: 'numerical',
+    id: 'pyq-math-2024-4', chapter_id: 'math-alg-matrices', year: 2025, shift: 'Evening', question_type: 'numerical',
     question_text: 'If A is a 3×3 matrix with |A| = 5, then |3A| is ___.',
     question_latex: '|kA| = k^n|A|', options: JSON.stringify(null),
     correct_answers: JSON.stringify(['135']), solution_text: 'For n×n matrix, |kA| = kⁿ|A|. So |3A| = 3³ × 5 = 27 × 5 = 135',
@@ -704,7 +704,7 @@ export const SEED_QUESTIONS = [
   },
 
   {
-    id: 'pyq-math-2023-3', chapter_id: 'math-calc-differentiation', year: 2023, shift: 'Evening', question_type: 'mcq',
+    id: 'pyq-math-2023-3', chapter_id: 'math-calc-differentiation', year: 2024, shift: 'Evening', question_type: 'mcq',
     question_text: 'The function f(x) = x³ - 3x has a local minimum at:',
     question_latex: null, options: JSON.stringify(['A) x = 0', 'B) x = 1', 'C) x = -1', 'D) x = 2']),
     correct_answers: JSON.stringify(['B']), solution_text: "f'(x) = 3x² - 3 = 0 → x = ±1. f''(x) = 6x. f''(1) = 6 > 0 → minimum at x=1. f''(-1) = -6 < 0 → maximum at x=-1.",
@@ -712,7 +712,7 @@ export const SEED_QUESTIONS = [
   },
 
   {
-    id: 'pyq-math-2022-2', chapter_id: 'math-calc-integration', year: 2022, shift: 'Evening', question_type: 'numerical',
+    id: 'pyq-math-2022-2', chapter_id: 'math-calc-integration', year: 2023, shift: 'Evening', question_type: 'numerical',
     question_text: 'The value of ∫₀¹ (3x² + 2x) dx is ___.',
     question_latex: '\\int_0^1 (3x^2 + 2x)\\,dx', options: JSON.stringify(null),
     correct_answers: JSON.stringify(['2']), solution_text: '∫(3x²+2x)dx = x³ + x². At x=1: 1+1=2. At x=0: 0. Answer = 2',
@@ -720,7 +720,7 @@ export const SEED_QUESTIONS = [
   },
 
   {
-    id: 'pyq-math-2022-3', chapter_id: 'math-prob-probability', year: 2022, shift: 'Evening', question_type: 'mcq',
+    id: 'pyq-math-2022-3', chapter_id: 'math-prob-probability', year: 2023, shift: 'Evening', question_type: 'mcq',
     question_text: 'If P(A) = 0.6, P(B) = 0.4, and A and B are independent, then P(A ∩ B) is:',
     question_latex: null, options: JSON.stringify(['A) 0.24', 'B) 1.0', 'C) 0.76', 'D) 0.40']),
     correct_answers: JSON.stringify(['A']), solution_text: 'For independent events: P(A∩B) = P(A) × P(B) = 0.6 × 0.4 = 0.24',
@@ -847,105 +847,105 @@ export const SEED_RESOURCES = [
 // ─── Additional PYQ Questions (2021, 2023, 2024) ───
 export const SEED_QUESTIONS_EXTRA = [
   {
-    id: 'pyq-phy-2024-1', chapter_id: 'phy-mech-kinematics', year: 2024, shift: 'Morning', question_type: 'mcq',
+    id: 'pyq-phy-2024-1', chapter_id: 'phy-mech-kinematics', year: 2025, shift: 'Morning', question_type: 'mcq',
     question_text: 'A stone is thrown vertically upwards with a speed of 20 m/s from the top of a building of height 25 m. The speed with which it hits the ground is (g = 10 m/s²):',
     question_latex: null, options: JSON.stringify(['A) 25 m/s', 'B) 30 m/s', 'C) 35 m/s', 'D) 40 m/s']),
     correct_answers: JSON.stringify(['B']), solution_text: 'v² = u² + 2g(h) = 400 + 500 = 900, v = 30 m/s',
     solution_latex: 'v = 30\\text{ m/s}', difficulty: 2, marks: 4, negative_marks: -1
   },
   {
-    id: 'pyq-phy-2024-2', chapter_id: 'phy-mech-work', year: 2024, shift: 'Evening', question_type: 'mcq',
+    id: 'pyq-phy-2024-2', chapter_id: 'phy-mech-work', year: 2025, shift: 'Evening', question_type: 'mcq',
     question_text: 'A body of mass 2 kg moving with velocity 4 m/s makes a head-on elastic collision with a body of mass 6 kg at rest. The velocity of the 2 kg body after collision is:',
     question_latex: null, options: JSON.stringify(['A) -2 m/s', 'B) +2 m/s', 'C) 0 m/s', 'D) -4 m/s']),
     correct_answers: JSON.stringify(['A']), solution_text: 'v₁ = (m₁-m₂)u₁/(m₁+m₂) = (2-6)(4)/8 = -2 m/s',
     solution_latex: 'v_1 = -2\\text{ m/s}', difficulty: 3, marks: 4, negative_marks: -1
   },
   {
-    id: 'pyq-phy-2023-1', chapter_id: 'phy-mech-rotation', year: 2023, shift: 'Morning', question_type: 'numerical',
+    id: 'pyq-phy-2023-1', chapter_id: 'phy-mech-rotation', year: 2024, shift: 'Morning', question_type: 'numerical',
     question_text: 'A solid sphere of mass 1 kg and radius 10 cm rolls without slipping with velocity 2 m/s. Its total KE in joules is ___.',
     question_latex: null, options: JSON.stringify(null),
     correct_answers: JSON.stringify(['2.8']), solution_text: 'KE = ½mv²(1+k²/R²) = ½(1)(4)(7/5) = 2.8 J',
     solution_latex: 'KE = 2.8\\text{ J}', difficulty: 3, marks: 4, negative_marks: 0
   },
   {
-    id: 'pyq-phy-2023-2', chapter_id: 'phy-electro-current', year: 2023, shift: 'Evening', question_type: 'mcq',
+    id: 'pyq-phy-2023-2', chapter_id: 'phy-electro-current', year: 2024, shift: 'Evening', question_type: 'mcq',
     question_text: 'In a Wheatstone bridge, if P = 100Ω, Q = 1000Ω, S = 100Ω, for balanced condition R is:',
     question_latex: null, options: JSON.stringify(['A) 10 Ω', 'B) 100 Ω', 'C) 1000 Ω', 'D) 1 Ω']),
     correct_answers: JSON.stringify(['A']), solution_text: 'P/Q = R/S → R = PS/Q = 10 Ω',
     solution_latex: 'R = 10\\,\\Omega', difficulty: 2, marks: 4, negative_marks: -1
   },
   {
-    id: 'pyq-phy-2021-1', chapter_id: 'phy-optics-ray', year: 2021, shift: 'Morning', question_type: 'mcq',
+    id: 'pyq-phy-2021-1', chapter_id: 'phy-optics-ray', year: 2025, shift: 'Morning', question_type: 'mcq',
     question_text: 'A convex lens of focal length 20 cm produces a real image 3× the object size. Object distance is:',
     question_latex: null, options: JSON.stringify(['A) 26.67 cm', 'B) 20 cm', 'C) 40 cm', 'D) 6.67 cm']),
     correct_answers: JSON.stringify(['A']), solution_text: 'm=-3, v=3|u|. 1/3|u|+1/|u|=1/20 → |u|=80/3=26.67',
     solution_latex: 'u = 26.67\\text{ cm}', difficulty: 3, marks: 4, negative_marks: -1
   },
   {
-    id: 'pyq-chem-2024-1', chapter_id: 'chem-phys-equilibrium', year: 2024, shift: 'Morning', question_type: 'mcq',
+    id: 'pyq-chem-2024-1', chapter_id: 'chem-phys-equilibrium', year: 2025, shift: 'Morning', question_type: 'mcq',
     question_text: 'For N₂ + 3H₂ ⇌ 2NH₃, Kp and Kc are related as:',
     question_latex: null, options: JSON.stringify(['A) Kp = Kc(RT)⁻²', 'B) Kp = Kc(RT)²', 'C) Kp = Kc', 'D) Kp = Kc(RT)⁻¹']),
     correct_answers: JSON.stringify(['A']), solution_text: 'Δn = 2-4 = -2. Kp = Kc(RT)^(-2)',
     solution_latex: 'K_p = K_c(RT)^{-2}', difficulty: 2, marks: 4, negative_marks: -1
   },
   {
-    id: 'pyq-chem-2024-2', chapter_id: 'chem-org-haloalkanes', year: 2024, shift: 'Evening', question_type: 'mcq',
+    id: 'pyq-chem-2024-2', chapter_id: 'chem-org-haloalkanes', year: 2025, shift: 'Evening', question_type: 'mcq',
     question_text: 'Which undergoes SN1 reaction fastest?',
     question_latex: null, options: JSON.stringify(['A) CH₃Cl', 'B) (CH₃)₃CCl', 'C) CH₃CH₂Cl', 'D) (CH₃)₂CHCl']),
     correct_answers: JSON.stringify(['B']), solution_text: '3° halide forms most stable carbocation → fastest SN1.',
     solution_latex: null, difficulty: 2, marks: 4, negative_marks: -1
   },
   {
-    id: 'pyq-chem-2023-1', chapter_id: 'chem-phys-kinetics', year: 2023, shift: 'Morning', question_type: 'numerical',
+    id: 'pyq-chem-2023-1', chapter_id: 'chem-phys-kinetics', year: 2024, shift: 'Morning', question_type: 'numerical',
     question_text: 'For a first-order reaction, 75% consumed in 32 min. Half-life in minutes is ___.',
     question_latex: null, options: JSON.stringify(null),
     correct_answers: JSON.stringify(['16']), solution_text: '25% left = (½)², so 2 half-lives = 32 → t½ = 16',
     solution_latex: 't_{1/2} = 16', difficulty: 2, marks: 4, negative_marks: 0
   },
   {
-    id: 'pyq-chem-2023-2', chapter_id: 'chem-phys-electrochem', year: 2023, shift: 'Evening', question_type: 'mcq',
+    id: 'pyq-chem-2023-2', chapter_id: 'chem-phys-electrochem', year: 2024, shift: 'Evening', question_type: 'mcq',
     question_text: 'E° of Zn|Zn²⁺||Cu²⁺|Cu cell is: (E°Zn=-0.76V, E°Cu=+0.34V)',
     question_latex: null, options: JSON.stringify(['A) 1.10 V', 'B) 0.42 V', 'C) -1.10 V', 'D) -0.42 V']),
     correct_answers: JSON.stringify(['A']), solution_text: 'E° = 0.34-(-0.76) = 1.10 V',
     solution_latex: 'E^\\circ = 1.10\\text{ V}', difficulty: 1, marks: 4, negative_marks: -1
   },
   {
-    id: 'pyq-chem-2021-1', chapter_id: 'chem-inorg-periodic', year: 2021, shift: 'Morning', question_type: 'mcq',
+    id: 'pyq-chem-2021-1', chapter_id: 'chem-inorg-periodic', year: 2025, shift: 'Morning', question_type: 'mcq',
     question_text: 'Among Li, Be, B, C, the element with highest first IE is:',
     question_latex: null, options: JSON.stringify(['A) Li', 'B) Be', 'C) B', 'D) C']),
     correct_answers: JSON.stringify(['B']), solution_text: 'Be has fully filled 2s² → extra stability → higher IE.',
     solution_latex: null, difficulty: 2, marks: 4, negative_marks: -1
   },
   {
-    id: 'pyq-math-2024-1', chapter_id: 'math-calc-differentiation', year: 2024, shift: 'Morning', question_type: 'mcq',
+    id: 'pyq-math-2024-1', chapter_id: 'math-calc-differentiation', year: 2025, shift: 'Morning', question_type: 'mcq',
     question_text: 'If f(x) = x³ − 3x² + 3x − 1, then f\'(1) is:',
     question_latex: null, options: JSON.stringify(['A) 0', 'B) 1', 'C) 3', 'D) -1']),
     correct_answers: JSON.stringify(['A']), solution_text: 'f\'(x) = 3x²-6x+3. f\'(1) = 3-6+3 = 0',
     solution_latex: "f'(1) = 0", difficulty: 1, marks: 4, negative_marks: -1
   },
   {
-    id: 'pyq-math-2024-2', chapter_id: 'math-alg-matrices', year: 2024, shift: 'Evening', question_type: 'numerical',
+    id: 'pyq-math-2024-2', chapter_id: 'math-alg-matrices', year: 2025, shift: 'Evening', question_type: 'numerical',
     question_text: 'If A is a 3×3 matrix with |A| = 5, then |3A| is ___.',
     question_latex: null, options: JSON.stringify(null),
     correct_answers: JSON.stringify(['135']), solution_text: '|3A| = 3³×5 = 135',
     solution_latex: '|3A| = 135', difficulty: 2, marks: 4, negative_marks: 0
   },
   {
-    id: 'pyq-math-2023-1', chapter_id: 'math-alg-complex', year: 2023, shift: 'Morning', question_type: 'mcq',
+    id: 'pyq-math-2023-1', chapter_id: 'math-alg-complex', year: 2024, shift: 'Morning', question_type: 'mcq',
     question_text: 'If z = 1 + i, then |z²| is:',
     question_latex: null, options: JSON.stringify(['A) 1', 'B) √2', 'C) 2', 'D) 4']),
     correct_answers: JSON.stringify(['C']), solution_text: '|z|=√2. |z²|=|z|²=2',
     solution_latex: '|z^2| = 2', difficulty: 1, marks: 4, negative_marks: -1
   },
   {
-    id: 'pyq-math-2023-2', chapter_id: 'math-coord-conics', year: 2023, shift: 'Evening', question_type: 'mcq',
+    id: 'pyq-math-2023-2', chapter_id: 'math-coord-conics', year: 2024, shift: 'Evening', question_type: 'mcq',
     question_text: 'Eccentricity of ellipse x²/25 + y²/16 = 1 is:',
     question_latex: null, options: JSON.stringify(['A) 3/5', 'B) 4/5', 'C) 3/4', 'D) 5/3']),
     correct_answers: JSON.stringify(['A']), solution_text: 'e = √(1-16/25) = √(9/25) = 3/5',
     solution_latex: 'e = 3/5', difficulty: 2, marks: 4, negative_marks: -1
   },
   {
-    id: 'pyq-math-2021-1', chapter_id: 'math-vectors-vectors', year: 2021, shift: 'Morning', question_type: 'numerical',
+    id: 'pyq-math-2021-1', chapter_id: 'math-vectors-vectors', year: 2025, shift: 'Morning', question_type: 'numerical',
     question_text: 'Evaluate the dot product of the two vectors given the following properties:',
     question_latex: '|\\vec{a}|=3, \\quad |\\vec{b}|=4, \\quad \\text{Angle between them} = 60^\\circ \\\\ \\text{Find } \\vec{a} \\cdot \\vec{b}',
     options: JSON.stringify(null),

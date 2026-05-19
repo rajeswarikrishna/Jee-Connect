@@ -41,14 +41,23 @@ export default function ProfileScreen() {
         }, [userEmail])
     );
 
+    async function cycleTargetExam() {
+        if (!userEmail) return;
+        const nextExam = targetExam === 'jee_main' ? 'jee_advanced' : targetExam === 'jee_advanced' ? 'both' : 'jee_main';
+        await gamificationService.setProfileValue(userEmail, 'target_exam', nextExam);
+        refreshGamificationData(userEmail);
+    }
+
+    const targetExamLabels: Record<string, string> = { jee_main: 'JEE Main', jee_advanced: 'JEE Advanced', both: 'Both (Main + Adv)' };
+
     const settings = [
+        { icon: '🎯', label: 'Target Exam', value: targetExamLabels[targetExam] || 'JEE Main', onPress: cycleTargetExam },
         { icon: '🌙', label: 'Dark Mode', toggle: true, enabled: darkMode, onToggle: toggleDarkMode },
         { icon: '🤖', label: 'Saathi AI', toggle: true, enabled: saathiEnabled, onToggle: toggleSaathi },
         { icon: '📡', label: 'Low-Bandwidth Mode', toggle: true, enabled: lowBandwidthMode, onToggle: toggleLowBandwidth },
         { icon: '🌐', label: 'Language', value: preferredLanguage === 'en' ? 'English' : 'Hindi', onPress: () => setPreferredLanguage(preferredLanguage === 'en' ? 'hi' : 'en') },
     ];
 
-    const targetExamLabels: Record<string, string> = { jee_main: 'JEE Main', jee_advanced: 'JEE Advanced', both: 'JEE Main + Advanced' };
 
     return (
         <ScrollView style={[styles.container, { backgroundColor: theme.background }]} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>

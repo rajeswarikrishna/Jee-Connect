@@ -39,16 +39,21 @@ for (const subject of subjects) {
   for (let i = 0; i < 20; i++) {
     const data = subject.mcq[i % subject.mcq.length];
     const chapterId = subject.chapters[i % subject.chapters.length];
+    // Prefix options with A), B), C), D) and find correct answer by index
+    const prefixedOpts = data.opts.map((o: string, idx: number) => `${String.fromCharCode(65 + idx)}) ${o}`);
+    const ansIndex = data.opts.indexOf(data.ans);
+    const ansLetter = ansIndex >= 0 ? String.fromCharCode(65 + ansIndex) : 'A';
+
     JEE_MAIN_QUESTIONS.push({
       id: `jm-${subject.id}-mcq-${i + 1}`,
       chapter_id: chapterId,
-      year: 2024,
+      year: 2025 - (i % 3),
       shift: 'Morning',
       question_type: 'mcq',
       question_text: `[PYQ] ${data.q}`,
       question_latex: null,
-      options: JSON.stringify(data.opts),
-      correct_answers: JSON.stringify([data.ans]),
+      options: JSON.stringify(prefixedOpts),
+      correct_answers: JSON.stringify([ansLetter]),
       solution_text: data.sol,
       solution_latex: null,
       difficulty: 3,
@@ -64,7 +69,7 @@ for (const subject of subjects) {
     JEE_MAIN_QUESTIONS.push({
       id: `jm-${subject.id}-num-${i + 1}`,
       chapter_id: chapterId,
-      year: 2024,
+      year: 2025 - (i % 3),
       shift: 'Morning',
       question_type: 'numerical',
       question_text: `[PYQ] ${data.q}`,
@@ -79,22 +84,6 @@ for (const subject of subjects) {
     });
   }
 }
-
-// Fix the answers to match the letter 'A', 'B', 'C', or 'D'
-JEE_MAIN_QUESTIONS.forEach(q => {
-  if (q.question_type === 'mcq') {
-    const opts = JSON.parse(q.options);
-    const ansText = JSON.parse(q.correct_answers)[0];
-    
-    // Find which option matches the ansText exactly.
-    const optIndex = opts.findIndex((o: string) => o.includes(ansText) || o === ansText);
-    if (optIndex >= 0) {
-      q.correct_answers = JSON.stringify([String.fromCharCode(65 + optIndex)]);
-    } else {
-      q.correct_answers = JSON.stringify(['A']); // fallback
-    }
-  }
-});
 
 // Create 10 Tests that reuse these 90 questions (shuffled order per test to make them unique)
 for (let testNum = 1; testNum <= 10; testNum++) {

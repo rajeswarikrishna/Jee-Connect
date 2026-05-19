@@ -15,7 +15,7 @@ export default function TestsScreen() {
     const colorScheme = useColorScheme();
     const isDark = colorScheme === 'dark';
     const theme = isDark ? Colors.dark : Colors.light;
-    const { userEmail } = useAppStore();
+    const { userEmail, targetExam } = useAppStore();
     const [tests, setTests] = useState<Test[]>([]);
     const [loading, setLoading] = useState(true);
     const [history, setHistory] = useState<any[]>([]);
@@ -24,11 +24,18 @@ export default function TestsScreen() {
     const [lastBreakdown, setLastBreakdown] = useState<AdaptiveBreakdown | null>(null);
     const [activeTab, setActiveTab] = useState<'mock' | 'quick' | 'recent'>('mock');
 
-    useEffect(() => { loadTests(); loadHistory(); }, [userEmail]);
+    useEffect(() => { loadTests(); loadHistory(); }, [userEmail, targetExam]);
 
     async function loadTests() {
         try {
-            const all = await testRepository.getAllTests(userEmail);
+            let all = await testRepository.getAllTests(userEmail);
+            
+            if (targetExam === 'jee_main') {
+                all = all.filter(t => !t.id.includes('jeeadv'));
+            } else if (targetExam === 'jee_advanced') {
+                all = all.filter(t => t.id.includes('jeeadv') || t.test_type === 'custom' || t.id.includes('custom') || t.id.includes('adaptive'));
+            }
+            
             if (all.length === 0) {
                 // Auto-create JEE Main pattern tests from PYQ bank for this user
                 const questions = await pyqRepository.getAll();

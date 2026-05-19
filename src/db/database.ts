@@ -17,6 +17,7 @@ import {
 } from './schema';
 import { JEE_MAIN_QUESTIONS, JEE_MAIN_TESTS, JEE_MAIN_TEST_QUESTIONS } from './jee_main_seed';
 import { JEE_ADVANCED_QUESTIONS, JEE_ADVANCED_TESTS, JEE_ADVANCED_TEST_QUESTIONS } from './jee_advanced_seed';
+import { EXTRA_PYQ_QUESTIONS } from './extra_pyq_seed';
 
 // Typed Database interface matching expo-sqlite API
 export interface Database {
@@ -194,7 +195,7 @@ async function seedDatabase(db: any): Promise<void> {
         );
     }
     // Seed extra PYQ questions (2021, 2023, 2024) and JEE MAIN
-    for (const q of [...SEED_QUESTIONS_EXTRA, ...JEE_MAIN_QUESTIONS, ...JEE_ADVANCED_QUESTIONS]) {
+    for (const q of [...SEED_QUESTIONS_EXTRA, ...EXTRA_PYQ_QUESTIONS, ...JEE_MAIN_QUESTIONS, ...JEE_ADVANCED_QUESTIONS]) {
         await db.runAsync(
             `INSERT OR IGNORE INTO questions 
         (id, chapter_id, year, shift, question_type, question_text, question_latex, options, correct_answers, solution_text, solution_latex, difficulty, marks, negative_marks) 
@@ -247,6 +248,7 @@ async function seedWebStore(): Promise<void> {
                 webStore['questions'] = [
                     ...SEED_QUESTIONS.map(q => ({ ...q })),
                     ...SEED_QUESTIONS_EXTRA.map(q => ({ ...q })),
+                    ...EXTRA_PYQ_QUESTIONS.map(q => ({ ...q })),
                     ...JEE_MAIN_QUESTIONS.map(q => ({ ...q })),
                     ...JEE_ADVANCED_QUESTIONS.map(q => ({ ...q }))
                 ];
@@ -305,7 +307,7 @@ async function seedWebStore(): Promise<void> {
     webStore['subjects'] = SEED_SUBJECTS.map(s => ({ ...s }));
     webStore['units'] = SEED_UNITS.map(u => ({ ...u }));
     webStore['chapters'] = SEED_CHAPTERS.map(c => ({ ...c, summary: null, content_uri: null, is_downloaded: 0 }));
-    webStore['questions'] = [...SEED_QUESTIONS.map(q => ({ ...q })), ...SEED_QUESTIONS_EXTRA.map(q => ({ ...q })), ...JEE_MAIN_QUESTIONS.map(q => ({ ...q })), ...JEE_ADVANCED_QUESTIONS.map(q => ({ ...q }))];
+    webStore['questions'] = [...SEED_QUESTIONS.map(q => ({ ...q })), ...SEED_QUESTIONS_EXTRA.map(q => ({ ...q })), ...EXTRA_PYQ_QUESTIONS.map(q => ({ ...q })), ...JEE_MAIN_QUESTIONS.map(q => ({ ...q })), ...JEE_ADVANCED_QUESTIONS.map(q => ({ ...q }))];
     webStore['resources'] = SEED_RESOURCES.map(r => ({ ...r, file_uri: null, created_at: new Date().toISOString() }));
     webStore['tests'] = [...SEED_TESTS.map(t => ({ ...t })), ...JEE_MAIN_TESTS.map(t => ({ ...t })), ...JEE_ADVANCED_TESTS.map(t => ({ ...t }))];
     webStore['test_questions'] = [...SEED_TEST_QUESTIONS.map(tq => ({ ...tq })), ...JEE_MAIN_TEST_QUESTIONS.map(tq => ({ ...tq })), ...JEE_ADVANCED_TEST_QUESTIONS.map(tq => ({ ...tq }))];

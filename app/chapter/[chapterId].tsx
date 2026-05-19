@@ -1,35 +1,46 @@
 // JEE Connect - Chapter Detail Screen (Knowledge Base + PYQs)
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, ActivityIndicator, TextInput } from 'react-native';
 import { useLocalSearchParams, Stack } from 'expo-router';
 import { useColorScheme } from '@/components/useColorScheme';
 import { Colors, Spacing, BorderRadius, FontSize, Shadow } from '@/src/constants/theme';
 import { getDatabase } from '@/src/db/database';
 import { pyqRepository, PYQuestion } from '@/src/repositories/PYQRepository';
 import { knowledgeRepository, Resource } from '@/src/repositories/KnowledgeRepository';
+import MathText from '@/components/MathText';
+import { useAppStore } from '@/src/store/appStore';
 
 export default function ChapterScreen() {
     const { chapterId } = useLocalSearchParams<{ chapterId: string }>();
     const colorScheme = useColorScheme();
     const isDark = colorScheme === 'dark';
     const theme = isDark ? Colors.dark : Colors.light;
+    const { targetExam } = useAppStore();
     const [chapterName, setChapterName] = useState('');
     const [questions, setQuestions] = useState<PYQuestion[]>([]);
     const [resources, setResources] = useState<Resource[]>([]);
     const [showSolution, setShowSolution] = useState<Record<string, boolean>>({});
-    const [selectedAnswers, setSelectedAnswers] = useState<Record<string, string>>({});
+    const [selectedAnswers, setSelectedAnswers] = useState<Record<string, string[]>>({});
     const [expandedRes, setExpandedRes] = useState<Record<string, boolean>>({});
     const [loading, setLoading] = useState(true);
     const [tab, setTab] = useState<'content' | 'pyq'>('content');
 
-    useEffect(() => { load(); }, [chapterId]);
+    useEffect(() => { load(); }, [chapterId, targetExam]);
 
     async function load() {
         try {
             const db = await getDatabase();
             const ch = await db.getFirstAsync<{ name: string }>('SELECT name FROM chapters WHERE id = ?', [chapterId!]);
             setChapterName(ch?.name || '');
-            const qs = await pyqRepository.getByChapter(chapterId!);
+            let qs = await pyqRepository.getByChapter(chapterId!);
+            
+            // Filter PYQs based on target exam
+            if (targetExam === 'jee_main') {
+                qs = qs.filter(q => !q.id.startsWith('ja-'));
+            } else if (targetExam === 'jee_advanced') {
+                qs = qs.filter(q => !q.id.startsWith('jm-') && !q.id.startsWith('xp-') && !q.id.startsWith('xc-') && !q.id.startsWith('xm-') && !q.id.startsWith('q-')); // keep only ja-
+            } // 'both' shows everything
+            
             setQuestions(qs);
             const res = await knowledgeRepository.getResourcesForChapter(chapterId!);
             setResources(res);
@@ -37,8 +48,18 @@ export default function ChapterScreen() {
         finally { setLoading(false); }
     }
 
-    function selectAnswer(qId: string, ans: string) {
-        setSelectedAnswers(prev => ({ ...prev, [qId]: ans }));
+    function selectAnswer(qId: string, ans: string, type: string) {
+        setSelectedAnswers(prev => {
+            const current = prev[qId] || [];
+            if (type === 'multi_answer') {
+                if (current.includes(ans)) {
+                    return { ...prev, [qId]: current.filter(a => a !== ans) };
+                } else {
+                    return { ...prev, [qId]: [...current, ans].sort() };
+                }
+            }
+            return { ...prev, [qId]: [ans] };
+        });
     }
 
     if (loading) return <View style={[styles.center, { backgroundColor: theme.background }]}><ActivityIndicator size="large" color={Colors.primary} /></View>;
@@ -61,21 +82,42 @@ export default function ChapterScreen() {
 
             {tab === 'content' ? (
                 <>
-                    {resources.length > 0 ? resources.map(res => {
+                    {resources.filter(r => r.type === 'notes' || r.type === 'formula_sheet').length > 0 ? resources.filter(r => r.type === 'notes' || r.type === 'formula_sheet').map(res => {
                         const isOpen = expandedRes[res.id];
+                        const isFormula = res.type === 'formula_sheet';
+                        const accent = isFormula ? '#10b981' : '#6366f1';
                         return (
-                            <TouchableOpacity key={res.id} style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.cardBorder, flexDirection: 'column', alignItems: 'stretch' }]}
+                            <TouchableOpacity key={res.id} style={[styles.card, {
+                                backgroundColor: theme.surface, borderColor: theme.cardBorder,
+                                flexDirection: 'column', alignItems: 'stretch',
+                                borderLeftWidth: 4, borderLeftColor: accent,
+                            }]}
                                 onPress={() => setExpandedRes(prev => ({ ...prev, [res.id]: !prev[res.id] }))} activeOpacity={0.7}>
                                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                    <Text style={{ fontSize: 20, marginRight: 8 }}>{res.type === 'textbook' ? '📖' : res.type === 'notes' ? '📝' : res.type === 'formula_sheet' ? '📋' : '🎬'}</Text>
+                                    <View style={{ width: 36, height: 36, borderRadius: 8, backgroundColor: accent + '20', justifyContent: 'center', alignItems: 'center', marginRight: 10 }}>
+                                        <Text style={{ fontSize: 18 }}>{isFormula ? '📋' : '📝'}</Text>
+                                    </View>
                                     <View style={{ flex: 1 }}>
                                         <Text style={[styles.cardTitle, { color: theme.text }]}>{res.title}</Text>
-                                        <Text style={[styles.cardSub, { color: theme.textSecondary }]}>{res.type.replace('_', ' ')} · {isOpen ? 'Tap to collapse ▲' : 'Tap to read ▼'}</Text>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 2, gap: 6 }}>
+                                            <View style={{ backgroundColor: accent + '20', paddingHorizontal: 6, paddingVertical: 1, borderRadius: 4 }}>
+                                                <Text style={{ color: accent, fontSize: 10, fontWeight: '700' }}>{isFormula ? 'FORMULA SHEET' : 'KEY CONCEPTS'}</Text>
+                                            </View>
+                                            <Text style={[styles.cardSub, { color: theme.textSecondary }]}>{isOpen ? 'Tap to collapse ▲' : 'Tap to read ▼'}</Text>
+                                        </View>
                                     </View>
                                 </View>
                                 {isOpen && res.content && (
-                                    <View style={[styles.resContent, { backgroundColor: isDark ? '#1e293b' : '#f8fafc', borderColor: theme.border }]}>
-                                        <Text style={[styles.resContentText, { color: theme.text }]}>{res.content}</Text>
+                                    <View style={[styles.resContent, {
+                                        backgroundColor: isFormula ? (isDark ? '#0f2918' : '#f0fdf4') : (isDark ? '#1e293b' : '#f8fafc'),
+                                        borderColor: isFormula ? '#10b981' + '40' : theme.border,
+                                    }]}>
+                                        <Text style={[styles.resContentText, {
+                                            color: theme.text,
+                                            fontFamily: isFormula ? 'monospace' : undefined,
+                                            fontSize: isFormula ? 13 : 14,
+                                            lineHeight: isFormula ? 20 : 22,
+                                        }]}>{res.content}</Text>
                                     </View>
                                 )}
                             </TouchableOpacity>
@@ -103,14 +145,18 @@ export default function ChapterScreen() {
                             <Text style={[styles.qText, { color: theme.text }]}>{q.question_text}</Text>
                             {q.question_latex && (
                                 <View style={[styles.latexBox, { backgroundColor: isDark ? '#1a1a2e' : '#f0f0ff', borderColor: theme.border }]}>
-                                    <Text style={[styles.latexText, { color: theme.text }]}>{q.question_latex}</Text>
+                                    <MathText latex={q.question_latex} color={theme.text} fontSize={14} />
                                 </View>
                             )}
 
                             {/* Options for MCQ/Multi-answer */}
                             {q.options && JSON.parse(q.options) && (JSON.parse(q.options) as string[]).map((opt, oi) => {
-                                const letter = opt.charAt(0);
-                                const isSelected = selectedAnswers[q.id] === letter;
+                                let letter = String.fromCharCode(65 + oi);
+                                if (/^[A-D][).]/i.test(opt)) {
+                                    letter = opt.charAt(0).toUpperCase();
+                                }
+                                const currentAnswers = selectedAnswers[q.id] || [];
+                                const isSelected = currentAnswers.includes(letter);
                                 const isRevealed = showSolution[q.id];
                                 const correctAns = JSON.parse(q.correct_answers);
                                 const isCorrect = correctAns.includes(letter);
@@ -123,8 +169,9 @@ export default function ChapterScreen() {
                                         borderColor: isRevealed
                                             ? (isCorrect ? Colors.success : isSelected ? Colors.error : theme.border)
                                             : (isSelected ? Colors.primary : theme.border),
-                                    }]} onPress={() => !isRevealed && selectAnswer(q.id, letter)} activeOpacity={0.7}>
+                                    }]} onPress={() => !isRevealed && selectAnswer(q.id, letter, q.question_type)} activeOpacity={0.7}>
                                         <View style={[styles.optionCircle, {
+                                            borderRadius: q.question_type === 'multi_answer' ? 4 : 10,
                                             backgroundColor: isSelected ? Colors.primary : 'transparent',
                                             borderColor: isSelected ? Colors.primary : theme.textMuted
                                         }]}>
@@ -136,8 +183,45 @@ export default function ChapterScreen() {
                             })}
 
                             {/* Numerical Input placeholder */}
-                            {q.question_type === 'numerical' && !showSolution[q.id] && (
-                                <Text style={[styles.numHint, { color: theme.textMuted }]}>Answer: Type a number (tap Show Solution to check)</Text>
+                            {q.question_type === 'numerical' && (
+                                <View style={{ marginVertical: 8 }}>
+                                    {!showSolution[q.id] ? (
+                                        <>
+                                            <Text style={[styles.numHint, { color: theme.textMuted, marginBottom: 4 }]}>Answer: Type a number (tap Show Solution to check)</Text>
+                                            <TextInput
+                                                style={[styles.numInput, { color: theme.text, borderColor: theme.border, backgroundColor: theme.surface }]}
+                                                placeholder="Enter your answer"
+                                                placeholderTextColor={theme.textMuted}
+                                                keyboardType="numeric"
+                                                value={(selectedAnswers[q.id] || [])[0] || ''}
+                                                onChangeText={(val) => setSelectedAnswers(prev => ({ ...prev, [q.id]: [val] }))}
+                                            />
+                                        </>
+                                    ) : (
+                                        <View style={{ marginTop: 8 }}>
+                                            {(() => {
+                                                const userAns = (selectedAnswers[q.id] || [])[0];
+                                                let isCorrect = false;
+                                                try {
+                                                    const correctArr = JSON.parse(q.correct_answers);
+                                                    isCorrect = userAns && (correctArr.includes(userAns) || correctArr.includes(Number(userAns)));
+                                                } catch (e) {
+                                                    isCorrect = userAns === q.correct_answers;
+                                                }
+                                                
+                                                return userAns ? (
+                                                    <Text style={{ color: isCorrect ? Colors.success : Colors.error, fontWeight: 'bold' }}>
+                                                        Your Answer: {userAns} {isCorrect ? '✅' : '❌'}
+                                                    </Text>
+                                                ) : (
+                                                    <Text style={{ color: theme.textMuted, fontStyle: 'italic' }}>
+                                                        No answer provided.
+                                                    </Text>
+                                                );
+                                            })()}
+                                        </View>
+                                    )}
+                                </View>
                             )}
 
                             {/* Show/Hide Solution */}
@@ -154,7 +238,7 @@ export default function ChapterScreen() {
                                     <Text style={[styles.solText, { color: theme.text }]}>{q.solution_text}</Text>
                                     {q.solution_latex && (
                                         <View style={[styles.latexBox, { backgroundColor: isDark ? '#0f2918' : '#f0fdf4', borderColor: Colors.success + '30', marginTop: 8 }]}>
-                                            <Text style={[styles.latexText, { color: theme.text }]}>{q.solution_latex}</Text>
+                                            <MathText latex={q.solution_latex} color={theme.text} fontSize={14} />
                                         </View>
                                     )}
                                 </View>
@@ -203,6 +287,7 @@ const styles = StyleSheet.create({
     optionCircle: { width: 20, height: 20, borderRadius: 10, borderWidth: 2, marginRight: 12, justifyContent: 'center', alignItems: 'center' },
     optionText: { flex: 1, fontSize: FontSize.base },
     numHint: { fontSize: FontSize.sm, fontStyle: 'italic', marginVertical: 8 },
+    numInput: { padding: 12, borderWidth: 1, borderRadius: BorderRadius.md, fontSize: FontSize.base },
     solBtn: { paddingVertical: 10, borderRadius: BorderRadius.full, alignItems: 'center', marginTop: 12 },
     solBtnText: { fontWeight: '700', fontSize: FontSize.sm },
     solBox: { padding: 12, borderRadius: BorderRadius.md, borderWidth: 1, marginTop: 12 },

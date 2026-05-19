@@ -13,6 +13,7 @@ import { Colors, Spacing, BorderRadius, FontSize, Shadow } from '@/src/constants
 import { useAppStore } from '@/src/store/appStore';
 import { gamificationService } from '@/src/services/GamificationService';
 import { getDatabase } from '@/src/db/database';
+import MathText from '@/components/MathText';
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -336,7 +337,9 @@ export default function DailyChallengeScreen() {
             <View style={[styles.questionCard, { backgroundColor: theme.surface, borderColor: theme.cardBorder }]}>
                 <Text style={[styles.questionText, { color: theme.text }]}>{question.question_text}</Text>
                 {question.question_latex && (
-                    <Text style={[styles.latexHint, { color: theme.textSecondary }]}>{question.question_latex}</Text>
+                    <View style={{ marginTop: 8 }}>
+                        <MathText latex={question.question_latex} color={theme.textSecondary} fontSize={14} />
+                    </View>
                 )}
             </View>
 
