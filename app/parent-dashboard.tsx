@@ -4,7 +4,7 @@ import { View, Text, ScrollView, StyleSheet, TouchableOpacity, TextInput, Alert,
 import { Stack, useRouter } from 'expo-router';
 import { useColorScheme } from '@/components/useColorScheme';
 import { Colors, Spacing, BorderRadius, FontSize, Shadow } from '@/src/constants/theme';
-import { analyticsService, ParentDashboardData } from '@/src/services/AnalyticsService';
+import { analyticsService, ParentDashboardData, SubjectBreakdown, ChapterPerformance } from '@/src/services/AnalyticsService';
 import { useAppStore } from '@/src/store/appStore';
 import { getDatabase } from '@/src/db/database';
 
@@ -16,6 +16,8 @@ export default function ParentDashboardScreen() {
     const router = useRouter();
 
     const [data, setData] = useState<ParentDashboardData | null>(null);
+    const [subjectData, setSubjectData] = useState<SubjectBreakdown[]>([]);
+    const [weakestAreas, setWeakestAreas] = useState<{ subject: string, topics: string[], isAllWeak: boolean }[]>([]);
     const [loading, setLoading] = useState(true);
     const [parentPhone, setParentPhone] = useState('');
     const [smsSetup, setSMSSetup] = useState(false);
@@ -26,6 +28,50 @@ export default function ParentDashboardScreen() {
         try {
             const d = await analyticsService.getParentDashboardData(userName, userEmail);
             setData(d);
+            const subData = await analyticsService.getSubjectBreakdown(userEmail);
+            setSubjectData(subData);
+            
+            const heatData = await analyticsService.getWeaknessHeatmap(userEmail);
+            
+            const subjectMap = new Map<string, { totalChapters: number, weakChapters: ChapterPerformance[] }>();
+            
+            heatData.forEach(h => {
+                if (!subjectMap.has(h.subject_name)) {
+                    subjectMap.set(h.subject_name, { totalChapters: 0, weakChapters: [] });
+                }
+                const sub = subjectMap.get(h.subject_name)!;
+                sub.totalChapters++;
+                
+                // Chapter is considered weak if accuracy < 50% or unattempted
+                if (h.accuracy < 50 || h.total_attempted === 0) {
+                    sub.weakChapters.push(h);
+                }
+            });
+            
+            const weakAreas: { subject: string, topics: string[], isAllWeak: boolean }[] = [];
+            
+            subjectMap.forEach((data, subjectName) => {
+                if (data.weakChapters.length > 0) {
+                    // Sort so actual failed chapters (attempts > 0, acc low) come first
+                    data.weakChapters.sort((a, b) => {
+                        if (a.accuracy !== b.accuracy) return a.accuracy - b.accuracy;
+                        return b.total_attempted - a.total_attempted;
+                    });
+                    
+                    const isAllWeak = data.weakChapters.length === data.totalChapters;
+                    
+                    // Show up to 3 topics to avoid cluttering the card
+                    const topics = data.weakChapters.slice(0, 3).map(c => c.chapter_name);
+                    
+                    weakAreas.push({
+                        subject: subjectName,
+                        topics: topics,
+                        isAllWeak: isAllWeak
+                    });
+                }
+            });
+            
+            setWeakestAreas(weakAreas);
             
             // Check for existing SMS settings
             const db = await getDatabase();
@@ -40,6 +86,42 @@ export default function ParentDashboardScreen() {
             setLoading(false); 
         }
     }
+
+    const getWeeklyData = () => {
+        if (!data || !data.recent_scores.length || !data.joined_at) return [];
+        const weeks: Record<number, { totalScore: number, totalMarks: number }> = {};
+        
+        // Use registration date as the start of Week 1
+        const joinDate = new Date(data.joined_at);
+        joinDate.setHours(0,0,0,0);
+        const joinTime = joinDate.getTime();
+        
+        data.recent_scores.forEach(score => {
+            const d = new Date(score.date);
+            d.setHours(0,0,0,0);
+            
+            const diffTime = Math.max(0, d.getTime() - joinTime);
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            const weekIndex = Math.floor(diffDays / 7) + 1;
+            
+            if (!weeks[weekIndex]) weeks[weekIndex] = { totalScore: 0, totalMarks: 0 };
+            weeks[weekIndex].totalScore += score.score;
+            weeks[weekIndex].totalMarks += score.total;
+        });
+
+        const sortedWeekIndices = Object.keys(weeks).map(Number).sort((a, b) => a - b);
+        
+        return sortedWeekIndices.slice(-5).map(weekIdx => {
+            const w = weeks[weekIdx];
+            const accuracy = w.totalMarks > 0 ? Math.round((w.totalScore / w.totalMarks) * 100) : 0;
+            // Calculate the actual date for this week's start
+            const weekStartDate = new Date(joinTime + (weekIdx - 1) * 7 * 24 * 60 * 60 * 1000);
+            const dateLabel = `${weekStartDate.getDate()} ${weekStartDate.toLocaleString('default', { month: 'short' })}`;
+            return { label: dateLabel, accuracy };
+        });
+    };
+
+    const weeklyData = getWeeklyData();
 
     async function handleSetupSMS() {
         if (!parentPhone.trim() || parentPhone.length < 10) {
@@ -65,7 +147,8 @@ export default function ParentDashboardScreen() {
                 console.error('[PARENT DB] Failed to save SMS settings:', e);
             }
 
-            const msg = 'SMS Sent Successfully! Weekly alerts are now active for Sundays at 10 PM. ✅';
+            const joinDay = data ? ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][new Date(data.joined_at).getDay()] : 'Sunday';
+            const msg = `SMS Sent Successfully! Weekly alerts are now active every ${joinDay}. ✅`;
             if (Platform.OS === 'web') alert(msg);
             else Alert.alert('Success', msg);
         } else {
@@ -146,31 +229,150 @@ export default function ParentDashboardScreen() {
                 </View>
             </View>
 
-            {/* Recent Scores */}
-            <Text style={[styles.sectionTitle, { color: theme.text }]}>📊 Recent Test Scores</Text>
-            {data.recent_scores.length > 0 ? data.recent_scores.map((score, i) => (
-                <View key={i} style={[styles.scoreRow, { backgroundColor: theme.surface, borderColor: theme.cardBorder }]}>
-                    <Text style={[{ color: theme.textMuted, fontSize: 12, width: 80 }]}>
-                        {new Date(score.date).toLocaleDateString()}
-                    </Text>
-                    <View style={[styles.scoreBar, { backgroundColor: theme.border }]}>
-                        <View style={[styles.scoreFill, {
-                            width: `${score.total > 0 ? (score.score / score.total) * 100 : 0}%`,
-                            backgroundColor: Colors.primary,
-                        }]} />
+            {/* Subject Performance */}
+            <Text style={[styles.sectionTitle, { color: theme.text, marginTop: Spacing.md }]}>📈 Subject Performance</Text>
+            <View style={[styles.graphCard, { backgroundColor: theme.surface, borderColor: theme.cardBorder }]}>
+                {/* Legends */}
+                <View style={styles.legendRow}>
+                    <View style={styles.legendItem}>
+                        <View style={[styles.legendDot, { backgroundColor: Colors.success }]} />
+                        <Text style={[styles.legendText, { color: theme.textSecondary }]}>Strong ({'>'}70%)</Text>
                     </View>
-                    <Text style={[{ color: theme.text, fontWeight: '700', fontSize: 13, width: 60, textAlign: 'right' }]}>
-                        {score.score}/{score.total}
-                    </Text>
+                    <View style={styles.legendItem}>
+                        <View style={[styles.legendDot, { backgroundColor: Colors.warning }]} />
+                        <Text style={[styles.legendText, { color: theme.textSecondary }]}>Moderate</Text>
+                    </View>
+                    <View style={styles.legendItem}>
+                        <View style={[styles.legendDot, { backgroundColor: Colors.error }]} />
+                        <Text style={[styles.legendText, { color: theme.textSecondary }]}>Weak ({'<'}40%)</Text>
+                    </View>
                 </View>
-            )) : (
-                <View style={[styles.emptyBox, { backgroundColor: theme.surface, borderColor: theme.cardBorder }]}>
-                    <Text style={{ fontSize: 32, marginBottom: 8 }}>📝</Text>
-                    <Text style={[{ color: theme.textSecondary, fontSize: 13, textAlign: 'center' }]}>
-                        No tests taken yet. Scores will appear here after the first mock test.
-                    </Text>
-                </View>
-            )}
+
+                {subjectData.length > 0 ? (
+                    <View>
+                        {/* Y-axis + Bars area */}
+                        <View style={{ flexDirection: 'row' }}>
+                            {/* Y-axis labels */}
+                            <View style={{ width: 32, height: 150, justifyContent: 'space-between', alignItems: 'flex-end', paddingRight: 4 }}>
+                                <Text style={{ fontSize: 10, color: theme.textMuted }}>100</Text>
+                                <Text style={{ fontSize: 10, color: theme.textMuted }}>75</Text>
+                                <Text style={{ fontSize: 10, color: theme.textMuted }}>50</Text>
+                                <Text style={{ fontSize: 10, color: theme.textMuted }}>25</Text>
+                                <Text style={{ fontSize: 10, color: theme.textMuted }}>0</Text>
+                            </View>
+                            {/* Bars container */}
+                            <View style={{ flex: 1, height: 150, position: 'relative' }}>
+                                {/* Gridlines */}
+                                {[0, 25, 50, 75].map(pct => (
+                                    <View key={pct} style={{ position: 'absolute', top: `${100 - pct}%`, left: 0, right: 0, height: 1, backgroundColor: theme.border, opacity: 0.4 }} />
+                                ))}
+                                {/* Bars row */}
+                                <View style={{ flex: 1, flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'center', gap: 16, paddingHorizontal: 12, borderBottomWidth: 2, borderBottomColor: theme.border }}>
+                                    {subjectData.map((sub, i) => {
+                                        const barColor = sub.accuracy > 70 ? Colors.success : sub.accuracy > 40 ? Colors.warning : Colors.error;
+                                        return (
+                                            <View key={i} style={{ alignItems: 'center', flex: 1, maxWidth: 80 }}>
+                                                <Text style={{ fontSize: 11, fontWeight: '800', color: barColor, marginBottom: 3 }}>{sub.accuracy}%</Text>
+                                                <View style={{ width: '70%', height: Math.max(4, (sub.accuracy / 100) * 140), backgroundColor: barColor, borderTopLeftRadius: 3, borderTopRightRadius: 3 }} />
+                                            </View>
+                                        );
+                                    })}
+                                </View>
+                            </View>
+                        </View>
+                        {/* X-axis labels */}
+                        <View style={{ flexDirection: 'row', marginLeft: 32, justifyContent: 'center', gap: 16, paddingHorizontal: 12, marginTop: 6 }}>
+                            {subjectData.map((sub, i) => (
+                                <View key={i} style={{ alignItems: 'center', flex: 1, maxWidth: 80 }}>
+                                    <Text style={{ fontSize: 18 }}>{sub.icon}</Text>
+                                    <Text style={{ fontSize: 10, fontWeight: '700', color: theme.text, textAlign: 'center' }} numberOfLines={1}>{sub.subject}</Text>
+                                </View>
+                            ))}
+                        </View>
+                    </View>
+                ) : (
+                    <Text style={{ color: theme.textMuted, textAlign: 'center', padding: Spacing.md }}>No subject data available yet.</Text>
+                )}
+            </View>
+
+            {/* Weekly Improvement Graph */}
+            <Text style={[styles.sectionTitle, { color: theme.text, marginTop: Spacing.md }]}>📈 Weekly Improvement</Text>
+            <View style={[styles.graphCard, { backgroundColor: theme.surface, borderColor: theme.cardBorder }]}>
+                {weeklyData.length > 0 ? (
+                    <View>
+                        {/* Y-axis + Bars area */}
+                        <View style={{ flexDirection: 'row' }}>
+                            {/* Y-axis labels */}
+                            <View style={{ width: 32, height: 150, justifyContent: 'space-between', alignItems: 'flex-end', paddingRight: 4 }}>
+                                <Text style={{ fontSize: 10, color: theme.textMuted }}>100</Text>
+                                <Text style={{ fontSize: 10, color: theme.textMuted }}>75</Text>
+                                <Text style={{ fontSize: 10, color: theme.textMuted }}>50</Text>
+                                <Text style={{ fontSize: 10, color: theme.textMuted }}>25</Text>
+                                <Text style={{ fontSize: 10, color: theme.textMuted }}>0</Text>
+                            </View>
+                            {/* Bars container */}
+                            <View style={{ flex: 1, height: 150, position: 'relative' }}>
+                                {/* Gridlines */}
+                                {[0, 25, 50, 75].map(pct => (
+                                    <View key={pct} style={{ position: 'absolute', top: `${100 - pct}%`, left: 0, right: 0, height: 1, backgroundColor: theme.border, opacity: 0.4 }} />
+                                ))}
+                                {/* Bars row */}
+                                <View style={{ flex: 1, flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'center', gap: 12, paddingHorizontal: 12, borderBottomWidth: 2, borderBottomColor: theme.border }}>
+                                    {weeklyData.map((week, i) => {
+                                        const barColor = Colors.primary;
+                                        return (
+                                            <View key={i} style={{ alignItems: 'center', flex: 1, maxWidth: 80 }}>
+                                                <Text style={{ fontSize: 11, fontWeight: '800', color: barColor, marginBottom: 3 }}>{week.accuracy}%</Text>
+                                                <View style={{ width: '70%', height: Math.max(4, (week.accuracy / 100) * 140), backgroundColor: barColor, borderTopLeftRadius: 3, borderTopRightRadius: 3 }} />
+                                            </View>
+                                        );
+                                    })}
+                                </View>
+                            </View>
+                        </View>
+                        {/* X-axis labels */}
+                        <View style={{ flexDirection: 'row', marginLeft: 32, justifyContent: 'center', gap: 12, paddingHorizontal: 12, marginTop: 6 }}>
+                            {weeklyData.map((week, i) => (
+                                <View key={i} style={{ alignItems: 'center', flex: 1, maxWidth: 80 }}>
+                                    <Text style={{ fontSize: 10, fontWeight: '700', color: theme.textSecondary, textAlign: 'center' }}>{week.label}</Text>
+                                </View>
+                            ))}
+                        </View>
+                    </View>
+                ) : (
+                    <View style={[styles.emptyBox, { backgroundColor: theme.surface, borderColor: theme.cardBorder }]}>
+                        <Text style={{ fontSize: 32, marginBottom: 8 }}>📝</Text>
+                        <Text style={[{ color: theme.textSecondary, fontSize: 13, textAlign: 'center' }]}>
+                            No tests taken yet. Scores will appear here after the first mock test.
+                        </Text>
+                    </View>
+                )}
+
+                {/* Focus Suggestion */}
+                {weakestAreas.length > 0 && (
+                    <View style={[styles.suggestionCard, { backgroundColor: Colors.error + '10', borderColor: Colors.error + '30', marginTop: Spacing.lg }]}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+                            <Text style={{ fontSize: 24, marginRight: 8 }}>🎯</Text>
+                            <Text style={{ color: theme.text, fontSize: 16, fontWeight: '700', flex: 1 }}>Focus Areas Needed</Text>
+                        </View>
+                        
+                        {weakestAreas.map((weak, i) => (
+                            <View key={i} style={{ marginBottom: 12 }}>
+                                <Text style={{ color: theme.text, fontSize: 14, lineHeight: 22 }}>
+                                    {data?.student_name} is currently struggling with <Text style={{ fontWeight: '700', color: Colors.error }}>
+                                        {weak.isAllWeak ? weak.subject : weak.topics.join(', ')}
+                                    </Text>
+                                    {!weak.isAllWeak ? ` in ${weak.subject}` : ''}.
+                                </Text>
+                            </View>
+                        ))}
+                        
+                        <Text style={{ color: theme.text, fontSize: 14, marginTop: 8 }}>
+                            💡 <Text style={{ fontWeight: '600' }}>Parent Tip:</Text> Encourage them to review the Key Concepts for these topics before taking another test.
+                        </Text>
+                    </View>
+                )}
+            </View>
 
             {/* SMS Setup */}
             <Text style={[styles.sectionTitle, { color: theme.text, marginTop: Spacing.md }]}>📱 Weekly SMS Alerts</Text>
@@ -233,4 +435,19 @@ const styles = StyleSheet.create({
     phoneInput: { borderWidth: 1.5, borderRadius: BorderRadius.md, padding: 14, fontSize: 16, fontWeight: '600', marginBottom: 12 },
     smsBtn: { paddingVertical: 14, borderRadius: BorderRadius.md, alignItems: 'center' },
     infoCard: { padding: Spacing.md, borderRadius: BorderRadius.md, borderWidth: 1 },
+    
+    // Vertical Graph styles
+    graphCard: { padding: Spacing.lg, borderRadius: BorderRadius.lg, borderWidth: 1, marginBottom: Spacing.md },
+    legendRow: { flexDirection: 'row', justifyContent: 'center', gap: 12, marginBottom: 24 },
+    legendItem: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+    legendDot: { width: 10, height: 10, borderRadius: 5 },
+    legendText: { fontSize: FontSize.xs, fontWeight: '600' },
+    verticalChartContainer: { flexDirection: 'row', justifyContent: 'space-around', alignItems: 'flex-end', height: 180, paddingBottom: 10 },
+    verticalBarCol: { alignItems: 'center', width: 60 },
+    verticalBarVal: { fontSize: FontSize.sm, fontWeight: '800', marginBottom: 4 },
+    verticalBarBg: { width: 32, height: 120, borderRadius: 8, justifyContent: 'flex-end', overflow: 'hidden' },
+    verticalBarFill: { width: '100%', borderTopLeftRadius: 4, borderTopRightRadius: 4, borderBottomLeftRadius: 0, borderBottomRightRadius: 0 },
+    verticalBarLbl: { fontSize: FontSize.xs, fontWeight: '700', marginTop: 4, textAlign: 'center' },
+    
+    suggestionCard: { padding: Spacing.lg, borderRadius: BorderRadius.md, borderWidth: 1 },
 });

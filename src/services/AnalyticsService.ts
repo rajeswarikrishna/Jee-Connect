@@ -33,6 +33,7 @@ export interface ParentDashboardData {
     recent_scores: { date: string; score: number; total: number }[];
     weekly_progress: number; // percentage improvement
     mood_average: number; // 0-1 scale
+    joined_at: string; // The date the user registered
 }
 
 export interface SubjectBreakdown {
@@ -308,6 +309,12 @@ class AnalyticsServiceClass {
             moodMsgs.forEach((m: any) => moodSum += m.sentiment_score);
             const moodAvg = moodMsgs.length > 0 ? (moodSum / moodMsgs.length) : 0.5;
 
+            // Fetch user registration date
+            const userRec = await db.getFirstAsync<{ created_at: string }>(
+                `SELECT created_at FROM users WHERE email = ?`, [studentEmail]
+            );
+            const joinedAt = userRec?.created_at || new Date().toISOString();
+
             return {
                 student_name: studentName,
                 total_tests: totalTests,
@@ -326,6 +333,7 @@ class AnalyticsServiceClass {
                 }),
                 weekly_progress: 0,
                 mood_average: moodAvg,
+                joined_at: joinedAt,
             };
         } catch (e) {
             console.log('[Analytics] Parent dashboard error:', e);
@@ -333,16 +341,18 @@ class AnalyticsServiceClass {
                 student_name: studentName, total_tests: 0, total_study_hours: 0,
                 current_streak: 0, overall_accuracy: 0, strongest_subject: '-',
                 weakest_subject: '-', recent_scores: [], weekly_progress: 0, mood_average: 0.5,
+                joined_at: new Date().toISOString()
             };
         }
     }
 
-    // SMS gateway for parent alerts (Routes via local bridge server for security)
+    // SMS gateway for parent alerts (Routes via Firebase Cloud Functions or local bridge server)
     async sendParentSMSAlert(phoneNumber: string, message: string): Promise<boolean> {
         try {
-            console.log(`[SMS] Sending to ${phoneNumber} via bridge...`);
+            const functionUrl = process.env.EXPO_PUBLIC_SMS_FUNCTION_URL || 'http://localhost:9000/send-sms';
+            console.log(`[SMS] Sending to ${phoneNumber} via ${functionUrl}...`);
             
-            const response = await fetch('http://localhost:9000/send-sms', {
+            const response = await fetch(functionUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -352,10 +362,10 @@ class AnalyticsServiceClass {
             });
 
             const result = await response.json();
-            // Twilio returns 'sid' on success. Simulation returns 'success: true'.
+            // Twilio returns 'sid' on success. Our Cloud Function returns 'success: true'.
             return response.ok && (result.sid !== undefined || result.success === true);
         } catch (e) {
-            console.error('[SMS] Bridge communication failed:', e);
+            console.error('[SMS] Cloud Function communication failed:', e);
             return false;
         }
     }

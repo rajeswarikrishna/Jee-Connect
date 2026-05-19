@@ -3,7 +3,7 @@ const https = require('https');
 const fs = require('fs');
 const path = require('path');
 
-const PORT = 9000;
+const PORT = process.env.PORT || 9000;
 const DB_FILE = path.join(__dirname, '..', 'temp_db.json');
 
 // --- 🛠️ TWILIO CONFIGURATION ---
@@ -45,7 +45,7 @@ const server = http.createServer((req, res) => {
                     
                     console.log(`[SMS] Request received for: ${data.to} | Formatted to: ${to}`);
                     
-                    if (TWILIO_SID.startsWith('YOUR_')) {
+                    if (!TWILIO_SID || TWILIO_SID.startsWith('YOUR_')) {
                         console.warn('[SMS] Twilio not configured. Simulating success...');
                         res.writeHead(200, { 'Content-Type': 'application/json' });
                         res.end(JSON.stringify({ success: true, message: 'Simulated SMS' }));
@@ -125,7 +125,7 @@ server.listen(PORT, () => {
 const LOG_FILE = path.join(__dirname, '..', 'sms_logs.json');
 
 function sendActualSMS(to, message) {
-    if (TWILIO_SID.startsWith('YOUR_')) return Promise.resolve({ success: false, message: 'Twilio not configured' });
+    if (!TWILIO_SID || TWILIO_SID.startsWith('YOUR_')) return Promise.resolve({ success: false, message: 'Twilio not configured' });
 
     return new Promise((resolve, reject) => {
         const postData = new URLSearchParams({ To: to, From: TWILIO_PHONE, Body: message }).toString();
