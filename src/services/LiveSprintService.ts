@@ -4,7 +4,7 @@
 import { getDatabase } from '../db/database';
 import { generateId } from '../repositories/BaseRepository';
 import { firestoreDb } from '../db/firebaseConfig';
-import { collection, query, where, getDocs, setDoc, doc, updateDoc, arrayUnion, getDoc, deleteDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, setDoc, doc, updateDoc, arrayUnion, getDoc, deleteDoc, orderBy, limit, increment } from 'firebase/firestore';
 
 export interface LiveSprint {
     id: string;
@@ -590,41 +590,32 @@ class LiveSprintServiceClass {
 
     // Doubt Marketplace operations
     async getRecentDoubts(): Promise<DoubtPost[]> {
-        const db = await getDatabase();
         try {
-            return await db.getAllAsync<DoubtPost>(
-                'SELECT * FROM doubt_marketplace ORDER BY created_at DESC LIMIT 20'
-            );
-        } catch {
-            return [
-                {
-                    id: 'doubt-1', question_text: 'How to solve projectile motion problems when angle is not given?',
-                    subject: 'Physics', chapter: 'Kinematics', posted_by: 'Amit K.',
-                    answers_count: 3, is_resolved: false, created_at: new Date().toISOString(),
-                },
-                {
-                    id: 'doubt-2', question_text: 'Difference between SN1 and SN2 mechanisms for secondary substrates?',
-                    subject: 'Chemistry', chapter: 'Organic', posted_by: 'Neha S.',
-                    answers_count: 5, is_resolved: true, created_at: new Date().toISOString(),
-                },
-                {
-                    id: 'doubt-3', question_text: 'Best method to solve definite integrals with |x| terms?',
-                    subject: 'Mathematics', chapter: 'Calculus', posted_by: 'Rohan P.',
-                    answers_count: 2, is_resolved: false, created_at: new Date().toISOString(),
-                },
-            ];
+            const doubtsRef = collection(firestoreDb, 'doubts');
+            const q = query(doubtsRef, orderBy('created_at', 'desc'), limit(20));
+            const snap = await getDocs(q);
+            const doubts = snap.docs.map(doc => doc.data() as DoubtPost);
+            return doubts;
+        } catch (e) {
+            console.log('[LiveSprint] Get recent doubts error:', e);
+            return [];
         }
     }
 
     async postDoubt(question: string, subject: string, chapter: string, postedBy: string): Promise<string> {
-        const db = await getDatabase();
         const id = generateId();
         try {
-            await db.runAsync(
-                `INSERT INTO doubt_marketplace (id, question_text, subject, chapter, posted_by, answers_count, is_resolved)
-                 VALUES (?, ?, ?, ?, ?, 0, 0)`,
-                [id, question, subject, chapter, postedBy]
-            );
+            const doubtDoc = doc(firestoreDb, 'doubts', id);
+            await setDoc(doubtDoc, {
+                id,
+                question_text: question,
+                subject,
+                chapter,
+                posted_by: postedBy,
+                answers_count: 0,
+                is_resolved: false,
+                created_at: new Date().toISOString()
+            });
         } catch (e) {
             console.log('[LiveSprint] Post doubt error:', e);
         }
@@ -632,18 +623,20 @@ class LiveSprintServiceClass {
     }
 
     async postAnswer(doubtId: string, answer: string, answeredBy: string): Promise<string> {
-        const db = await getDatabase();
         const id = generateId();
         try {
-            await db.runAsync(
-                `INSERT INTO doubt_answers (id, doubt_id, answer_text, answered_by, upvotes, is_accepted)
-                 VALUES (?, ?, ?, ?, 0, 0)`,
-                [id, doubtId, answer, answeredBy]
-            );
-            await db.runAsync(
-                `UPDATE doubt_marketplace SET answers_count = answers_count + 1 WHERE id = ?`,
-                [doubtId]
-            );
+            const answerDoc = doc(firestoreDb, 'doubt_answers', id);
+            await setDoc(answerDoc, {
+                id,
+                doubt_id: doubtId,
+                answer_text: answer,
+                answered_by: answeredBy,
+                upvotes: 0,
+                is_accepted: false,
+                created_at: new Date().toISOString()
+            });
+            const doubtDoc = doc(firestoreDb, 'doubts', doubtId);
+            await updateDoc(doubtDoc, { answers_count: increment(1) });
         } catch (e) {
             console.log('[LiveSprint] Post answer error:', e);
         }
@@ -651,77 +644,65 @@ class LiveSprintServiceClass {
     }
 
     async getAnswersForDoubt(doubtId: string): Promise<DoubtAnswer[]> {
-        const db = await getDatabase();
         try {
-            const answers = await db.getAllAsync<DoubtAnswer>(
-                'SELECT * FROM doubt_answers WHERE doubt_id = ? ORDER BY created_at ASC',
-                [doubtId]
-            );
-            if (answers && answers.length > 0) {
-                return answers;
-            }
-            
-            // Return mock answers if none found (for mock doubts)
-            if (doubtId === 'doubt-1') {
-                return [{ id: 'ans-1', doubt_id: doubtId, answer_text: "Use the kinematic equations, particularly the ones that don't require the angle if you have other parameters.", answered_by: 'Rahul M.', upvotes: 2, is_accepted: false, created_at: new Date().toISOString() }, { id: 'ans-1b', doubt_id: doubtId, answer_text: "Draw a free body diagram first, it usually helps visualize the missing components.", answered_by: 'Priya S.', upvotes: 1, is_accepted: true, created_at: new Date().toISOString() }, { id: 'ans-1c', doubt_id: doubtId, answer_text: "Check if you can use conservation of energy instead.", answered_by: 'Teacher_John', upvotes: 5, is_accepted: false, created_at: new Date().toISOString() }];
-            }
-            if (doubtId === 'doubt-2') {
-                 return [{ id: 'ans-2', doubt_id: doubtId, answer_text: "For secondary substrates, SN2 is favored by strong nucleophiles and polar aprotic solvents, while SN1 is favored by weak nucleophiles and polar protic solvents.", answered_by: 'Priya S.', upvotes: 4, is_accepted: true, created_at: new Date().toISOString() }, { id: 'ans-2b', doubt_id: doubtId, answer_text: "Look at the leaving group too!", answered_by: 'Amit K.', upvotes: 1, is_accepted: false, created_at: new Date().toISOString() }, { id: 'ans-2c', doubt_id: doubtId, answer_text: "SN1 usually gives a racemic mixture.", answered_by: 'Teacher_Sarah', upvotes: 2, is_accepted: false, created_at: new Date().toISOString() }, { id: 'ans-2d', doubt_id: doubtId, answer_text: "Don't forget rearrangements in SN1.", answered_by: 'Deva Gayathri', upvotes: 0, is_accepted: false, created_at: new Date().toISOString() }, { id: 'ans-2e', doubt_id: doubtId, answer_text: "Yup, polar aprotic is key for SN2.", answered_by: 'Rohan P.', upvotes: 1, is_accepted: false, created_at: new Date().toISOString() }];
-            }
-            if (doubtId === 'doubt-3') {
-                 return [{ id: 'ans-3', doubt_id: doubtId, answer_text: "Split the integral at the critical points where the absolute value changes sign.", answered_by: 'Vikram A.', upvotes: 1, is_accepted: true, created_at: new Date().toISOString() }, { id: 'ans-3b', doubt_id: doubtId, answer_text: "Draw the graph of the function to see the areas.", answered_by: 'Neha S.', upvotes: 2, is_accepted: false, created_at: new Date().toISOString() }];
-            }
-            return [];
-        } catch {
+            const answersRef = collection(firestoreDb, 'doubt_answers');
+            const q = query(answersRef, where('doubt_id', '==', doubtId), orderBy('created_at', 'asc'));
+            const snap = await getDocs(q);
+            return snap.docs.map(doc => doc.data() as DoubtAnswer);
+        } catch (e) {
+            console.log('[LiveSprint] Get answers error:', e);
             return [];
         }
     }
 
     async resolveDoubt(doubtId: string): Promise<void> {
-        const db = await getDatabase();
         try {
-            await db.runAsync(
-                'UPDATE doubt_marketplace SET is_resolved = 1 WHERE id = ?',
-                [doubtId]
-            );
+            const doubtDoc = doc(firestoreDb, 'doubts', doubtId);
+            await updateDoc(doubtDoc, { is_resolved: true });
         } catch (e) {
             console.log('[LiveSprint] Resolve doubt error:', e);
         }
     }
 
     async editDoubt(doubtId: string, newText: string): Promise<void> {
-        const db = await getDatabase();
         try {
-            await db.runAsync('UPDATE doubt_marketplace SET question_text = ? WHERE id = ?', [newText, doubtId]);
+            const doubtDoc = doc(firestoreDb, 'doubts', doubtId);
+            await updateDoc(doubtDoc, { question_text: newText });
         } catch (e) {
             console.log('[LiveSprint] Edit doubt error:', e);
         }
     }
 
     async deleteDoubt(doubtId: string): Promise<void> {
-        const db = await getDatabase();
         try {
-            await db.runAsync('DELETE FROM doubt_answers WHERE doubt_id = ?', [doubtId]);
-            await db.runAsync('DELETE FROM doubt_marketplace WHERE id = ?', [doubtId]);
+            // First delete answers associated with the doubt
+            const answersRef = collection(firestoreDb, 'doubt_answers');
+            const q = query(answersRef, where('doubt_id', '==', doubtId));
+            const snap = await getDocs(q);
+            for (const docSnap of snap.docs) {
+                await deleteDoc(doc(firestoreDb, 'doubt_answers', docSnap.id));
+            }
+            // Delete the doubt itself
+            await deleteDoc(doc(firestoreDb, 'doubts', doubtId));
         } catch (e) {
             console.log('[LiveSprint] Delete doubt error:', e);
         }
     }
 
     async editAnswer(answerId: string, newText: string): Promise<void> {
-        const db = await getDatabase();
         try {
-            await db.runAsync('UPDATE doubt_answers SET answer_text = ? WHERE id = ?', [newText, answerId]);
+            const answerDoc = doc(firestoreDb, 'doubt_answers', answerId);
+            await updateDoc(answerDoc, { answer_text: newText });
         } catch (e) {
             console.log('[LiveSprint] Edit answer error:', e);
         }
     }
 
     async deleteAnswer(answerId: string, doubtId: string): Promise<void> {
-        const db = await getDatabase();
         try {
-            await db.runAsync('DELETE FROM doubt_answers WHERE id = ?', [answerId]);
-            await db.runAsync('UPDATE doubt_marketplace SET answers_count = answers_count - 1 WHERE id = ?', [doubtId]);
+            await deleteDoc(doc(firestoreDb, 'doubt_answers', answerId));
+            const doubtDoc = doc(firestoreDb, 'doubts', doubtId);
+            await updateDoc(doubtDoc, { answers_count: increment(-1) });
         } catch (e) {
             console.log('[LiveSprint] Delete answer error:', e);
         }
