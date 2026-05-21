@@ -40,10 +40,15 @@ const server = http.createServer((req, res) => {
                     to = '+91' + to;
                 }
 
+                // Extract Twilio credentials from request body (optional fallback) or environment variables
+                const activeSid = data.twilioSid || TWILIO_SID;
+                const activeToken = data.twilioToken || TWILIO_TOKEN;
+                const activePhone = data.twilioPhone || TWILIO_PHONE;
+
                 console.log(`[SMS] Sending to: ${to}`);
 
                 // If Twilio not configured, simulate success
-                if (!TWILIO_SID || TWILIO_SID.startsWith('YOUR_')) {
+                if (!activeSid || activeSid.startsWith('YOUR_')) {
                     console.warn('[SMS] Twilio not configured. Simulating...');
                     res.writeHead(200, { 'Content-Type': 'application/json' });
                     res.end(JSON.stringify({ success: true, message: 'Simulated SMS' }));
@@ -53,19 +58,19 @@ const server = http.createServer((req, res) => {
                 // Send via Twilio
                 const postData = new URLSearchParams({
                     To: to,
-                    From: TWILIO_PHONE,
+                    From: activePhone,
                     Body: data.message
                 }).toString();
 
                 const options = {
                     hostname: 'api.twilio.com',
                     port: 443,
-                    path: `/2010-04-01/Accounts/${TWILIO_SID}/Messages.json`,
+                    path: `/2010-04-01/Accounts/${activeSid}/Messages.json`,
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
                         'Content-Length': postData.length,
-                        'Authorization': 'Basic ' + Buffer.from(TWILIO_SID + ':' + TWILIO_TOKEN).toString('base64')
+                        'Authorization': 'Basic ' + Buffer.from(activeSid + ':' + activeToken).toString('base64')
                     }
                 };
 

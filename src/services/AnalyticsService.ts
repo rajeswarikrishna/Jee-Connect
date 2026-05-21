@@ -357,7 +357,10 @@ class AnalyticsServiceClass {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     to: phoneNumber,
-                    message: message
+                    message: message,
+                    twilioSid: process.env.EXPO_PUBLIC_TWILIO_SID,
+                    twilioToken: process.env.EXPO_PUBLIC_TWILIO_TOKEN,
+                    twilioPhone: process.env.EXPO_PUBLIC_TWILIO_PHONE
                 })
             });
 
