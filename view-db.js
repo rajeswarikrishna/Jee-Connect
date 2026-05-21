@@ -68,7 +68,27 @@ async function viewDb() {
                 if (totalMin > 0) {
                     studyHours = Math.max(0.1, Math.round((totalMin / 60) * 10) / 10);
                 }
-                const streak = testsWritten > 0 ? 1 : 0;
+                // Calculate REAL streak from daily_streaks data
+                const userStreaks = (localDb.daily_streaks || [])
+                    .filter(s => s.user_email === u.email)
+                    .map(s => s.date)
+                    .sort()
+                    .reverse(); // most recent first
+                let streak = 0;
+                if (userStreaks.length > 0) {
+                    const today = new Date().toISOString().split('T')[0];
+                    const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+                    // Streak only counts if last activity was today or yesterday
+                    let startDate = userStreaks[0] === today ? today : (userStreaks[0] === yesterday ? yesterday : null);
+                    if (startDate) {
+                        const dateSet = new Set(userStreaks);
+                        let checkDate = new Date(startDate);
+                        while (dateSet.has(checkDate.toISOString().split('T')[0])) {
+                            streak++;
+                            checkDate.setDate(checkDate.getDate() - 1);
+                        }
+                    }
+                }
 
                 return {
                     id: u.id,
