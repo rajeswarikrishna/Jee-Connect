@@ -1,0 +1,40 @@
+graph TD
+    %% Custom Styling matching the visual green diagram
+    classDef step fill:#e8f5e9,stroke:#2e7d32,stroke-width:1px,color:#1b5e20;
+    classDef decision fill:#ffffff,stroke:#333333,stroke-width:1px;
+    classDef startNode fill:#111111,stroke:#111111,stroke-width:2px;
+    classDef endNode fill:#b71c1c,stroke:#b71c1c,stroke-width:2px;
+
+    START(( )):::startNode --> Login["Login as Student / Parent"]:::step
+    Login --> Select["Select Action Dashboard"]:::step
+    Select --> Upload["Upload Test / Doubt Paper"]:::step
+    Upload --> OCR["Perform OCR Extraction"]:::step
+    
+    OCR --> Dec1{"Is Extraction\nSuccessful?"}:::decision
+    Dec1 -- "No" --> Reedit["Re-capture / Edit Text"]:::step
+    Reedit --> Upload
+    
+    Dec1 -- "Yes" --> Generate["Generate Practice Test"]:::step
+    Generate --> Store["Store in Local SQLite DB"]:::step
+    
+    Store --> Dec2{"Is Device\nOnline?"}:::decision
+    
+    Dec2 -- "No" --> QueueSync["Queue in sync_queue"]:::step
+    QueueSync --> MarkPending["Mark as Pending Sync"]:::step
+    MarkPending --> END(( )):::endNode
+    
+    Dec2 -- "Yes" --> SyncCloud["Sync Data to Firebase Cloud"]:::step
+    SyncCloud --> Dec3{"Is Performance\nCritical? (<50%)"}:::decision
+    
+    Dec3 -- "No" --> WeeklySummary["Add to Weekly Summary"]:::step
+    WeeklySummary --> END
+    
+    Dec3 -- "Yes" --> TriggerSMS["Trigger Parent SMS Alert"]:::step
+    TriggerSMS --> Dec4{"Did SMS Deliver\nSuccessfully?"}:::decision
+    
+    Dec4 -- "Yes" --> LogSuccess["Update last_alert_sent Status"]:::step
+    LogSuccess --> END
+    
+    Dec4 -- "No" --> FallbackEmail["Fallback to EmailJS Alert"]:::step
+    FallbackEmail --> MarkLog["Log Alert Status to SQLite"]:::step
+    MarkLog --> END

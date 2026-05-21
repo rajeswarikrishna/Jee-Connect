@@ -35,7 +35,7 @@ export default function UserViewerScreen() {
             <View style={styles.userInfo}>
                 <Text style={[styles.userName, { color: theme.text }]}>{item.name}</Text>
                 <Text style={[styles.userEmail, { color: theme.textSecondary }]}>{item.email}</Text>
-                <Text style={[styles.userPass, { color: Colors.info }]}>Password: {item.password}</Text>
+                <Text style={[styles.userPass, { color: Colors.info }]}>Password: {'*'.repeat(item.password ? String(item.password).length : 6)}</Text>
             </View>
             <View style={styles.dateInfo}>
                 <Text style={[styles.userDate, { color: theme.textMuted }]}>

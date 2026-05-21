@@ -74,7 +74,7 @@ async function viewDb() {
                     id: u.id,
                     name: u.name,
                     email: u.email,
-                    password: u.password,
+                    password: u.password ? '*'.repeat(u.password.length) : '******',
                     created_at: u.created_at,
                     tests_written: testsWritten,
                     study_hours: studyHours + 'h',

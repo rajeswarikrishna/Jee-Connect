@@ -1,60 +1,44 @@
-graph LR
-    %% Styling
-    classDef client fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
-    classDef service fill:#fff3e0,stroke:#e65100,stroke-width:2px;
-    classDef storage fill:#e8f5e9,stroke:#1b5e20,stroke-width:2px;
-    classDef infra fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;
-    classDef external fill:#fafafa,stroke:#616161,stroke-width:2px,stroke-dasharray: 5 5;
+graph TB
+    %% JEE Connect — System Architecture
 
-    subgraph UI ["USER INTERFACE (Expo/React Native)"]
-        direction TB
-        Auth["Authentication & Profile"]:::client
-        Study["Study Dashboard (Subjects/Chapters)"]:::client
-        TestCenter["Test Center (Mock & PYQ Tests)"]:::client
-        SaathiChat["Saathi AI Chat Interface"]:::client
-        ParentDash["Parental Dashboard"]:::client
+    subgraph PL ["PRESENTATION LAYER — Expo React Native"]
+        direction LR
+        P1["AuthScreen\nEmail + Password"] ~~~ P2["OnboardingScreen\nRole selection"] ~~~ P3["HomeDashboard\nFocus Today + Stats"] ~~~ P4["StudyDashboard\nSubjects + Chapters"] ~~~ P5["TestCenter\nMock + PYQ + Adaptive"] ~~~ P6["SaathiAI\nMultilingual Chat"]
     end
 
-    subgraph Logic ["BACKEND SERVICES & LOGIC"]
-        direction TB
-        SyncEngine["Smart Sync Engine (Delta Sync)"]:::service
-        OCR["OCR & Formula Recognition"]:::service
-        AICore["Saathi AI Logic"]:::service
-        Analytics["Performance Analytics Engine"]:::service
-        LiveSprint["Live Sprint Service"]:::service
+    subgraph PL2 ["PRESENTATION LAYER contd."]
+        direction LR
+        P7["ParentDashboard\nSMS Alerts"] ~~~ P8["LiveSprints\nClans + Leaderboard"] ~~~ P9["Analytics\nWeakness Heatmap"] ~~~ P10["Profile\nXP + Streaks + Badges"] ~~~ P11["DailyChallenge\nDaily Question + Spin"] ~~~ P12["DoubtMarketplace\nCommunity QnA"]
     end
 
-    subgraph Data ["DATA STORAGE"]
-        direction TB
-        SQLite["SQLite (Local Questions DB)"]:::storage
-        Encrypted["AES-256 Encrypted Store"]:::storage
+    subgraph BL ["BUSINESS LOGIC LAYER"]
+        direction LR
+        B1["AuthLogic\nLogin vs Student routing"] ~~~ B2["AdaptiveTestEngine\nWeakness-based generation"] ~~~ B3["SaathiAI Logic\nNLP + Mnemonics + Sentiment"] ~~~ B4["AnalyticsEngine\nHeatmap + Trends + SMS"]
     end
 
-    subgraph Infra ["INFRASTRUCTURE & EXTERNAL"]
-        direction TB
-        GitHub["GitHub Repository"]:::infra
-        ExpoEAS["Expo EAS (Build & Deploy)"]:::infra
-        AI_API["External LLM API (Google/OpenAI)"]:::external
-        SMS_Gate["SMS Gateway (Parent Alerts)"]:::external
-        MLKit["Google ML Kit (OCR)"]:::external
+    subgraph BL2 ["BUSINESS LOGIC LAYER contd."]
+        direction LR
+        B5["GamificationService\nXP + Streaks + Achievements"] ~~~ B6["LiveSprintService\nClans + Lobby + Battles"] ~~~ B7["SmartSyncEngine\nDelta Sync + Queue"] ~~~ B8["OCRService\nML Kit + Formula Match"]
     end
 
-    %% Connections
-    UI --- Logic
-    Auth --> Encrypted
-    Study --> SQLite
-    TestCenter --> SQLite
-    TestCenter --> SyncEngine
-    SaathiChat --> AICore
-    SaathiChat --> OCR
-    
-    Logic --- Data
-    SyncEngine --> SQLite
-    AICore --> AI_API
-    OCR --> MLKit
-    Analytics --> SQLite
-    Analytics --> SMS_Gate
-    
-    Logic --- Infra
-    GitHub --> ExpoEAS
-    ExpoEAS --> UI
+    subgraph DL ["DATA LAYER"]
+        direction LR
+        D1["SQLite Local DB\nQuestions + Tests + XP + Chat"] ~~~ D2["Firebase Firestore\nClans + Leaderboard + Doubts"] ~~~ D3["Zustand Store\nSession + UI State"] ~~~ D4["Seed Data\nPYQs + Resources + Chapters"]
+    end
+
+    subgraph EX ["EXTERNAL SERVICES"]
+        direction LR
+        E1["Google ML Kit OCR\nOn-device + no cloud"] ~~~ E2["Twilio SMS\nParent alerts"] ~~~ E3["Firebase SDK\nAuth + Firestore + Realtime"] ~~~ E4["Expo EAS\nBuild + OTA Updates"]
+    end
+
+    subgraph FLOW ["PARENT SMS ALERT FLOW"]
+        direction LR
+        F1["AnalyticsService\ngenerates weekly report"] --> F2["SMS Server on Render\nNode.js + Twilio proxy"]
+    end
+
+    F3["Status: delivered\nReport sent to parent"]
+    F4["Status: failed\nRetry queued"]
+
+    PL --> PL2 --> BL --> BL2 --> DL --> EX --> FLOW
+    F2 -- "SMS sent" --> F3
+    F2 -- "delivery failed" --> F4
