@@ -48,7 +48,7 @@ export default function AuthScreen() {
         setAuthMode(nextMode);
         setPassword('');
         setConfirmPassword('');
-        
+
         Animated.spring(slideAnim, {
             toValue: nextMode === 'signup' ? 1 : 0,
             useNativeDriver: true,
@@ -95,7 +95,7 @@ export default function AuthScreen() {
         console.log('[AUTH] OTP requested for:', email);
         const result = await requestOtp(email.trim());
         setLoading(false);
-        
+
         if (result.success) {
             showAlert('Success', 'Email sent successfully');
             setAuthMode('reset');
@@ -136,7 +136,7 @@ export default function AuthScreen() {
     const handleExportDatabase = async () => {
         const { userRepository } = require('@/src/repositories/UserRepository');
         const users = await userRepository.getAll();
-        
+
         let sql = "-- JEE Connect Database Export\n";
         sql += "CREATE TABLE IF NOT EXISTS users (id TEXT PRIMARY KEY, email TEXT UNIQUE, name TEXT, password TEXT, created_at TEXT);\n";
         users.forEach((u: any) => {
@@ -188,7 +188,7 @@ export default function AuthScreen() {
                     const { userRepository } = require('@/src/repositories/UserRepository');
                     userRepository.debugListAll();
                 }
-                
+
                 if (isParents) {
                     router.replace('/parent-dashboard' as any);
                 } else if (isSignup) {
@@ -218,7 +218,7 @@ export default function AuthScreen() {
                     <View style={[styles.logoCircle, { backgroundColor: Colors.primary }]}>
                         <Text style={styles.logoEmoji}>🚀</Text>
                     </View>
-                    
+
                     <Text style={[styles.appName, { color: theme.text }]}>JEE Connect</Text>
                     <Text style={[styles.tagline, { color: theme.textSecondary }]}>
                         The Resilient Learning Ecosystem
