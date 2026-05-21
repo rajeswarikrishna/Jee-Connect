@@ -1,0 +1,90 @@
+graph TD
+    %% JEE Connect — End-to-End System & Data Flow Architectural Diagram
+    title JEE Connect — End-to-End System & Data Flow Architecture
+
+    %% Style configuration
+    classDef student fill:#e0f7fa,stroke:#00acc1,stroke-width:2px;
+    classDef device fill:#fff9c4,stroke:#fbc02d,stroke-width:2px;
+    classDef service fill:#e1bee7,stroke:#8e24aa,stroke-width:2px;
+    classDef cloud fill:#ffe0b2,stroke:#f57c00,stroke-width:2px;
+    classDef parent fill:#d1c4e9,stroke:#5e35b1,stroke-width:2px;
+
+    %% -------------------------------------------------------
+    %% 1. ACTORS & USER INGESTION
+    %% -------------------------------------------------------
+    Student((👨‍🎓 Student)):::student
+    
+    subgraph APP ["📱 JEE Connect App (Client-Device Boundary)"]
+        UI["🖥️ Presentation Layer (UI)\n• React Native / Expo\n• Local Dashboards\n• Proctoring Screen"]:::device
+        
+        %% -------------------------------------------------------
+        %% 2. BUSINESS LOGIC (CLIENT SIDE)
+        %% -------------------------------------------------------
+        subgraph ENGINE ["⚙️ Client-Side Services & Engines"]
+            ATE["🎯 Adaptive Test Engine\n(Weakness-Targeted)"]:::device
+            GS["🔥 Gamification Service\n(XP, Streaks, Achievements)"]:::device
+            Saathi["🤖 Saathi AI Companion\n(Multilingual + Sentiment)"]:::device
+            OCR["📷 OCR Service\n(Google ML Kit on-device)"]:::device
+        end
+
+        %% -------------------------------------------------------
+        %% 3. LOCAL STORAGE
+        %% -------------------------------------------------------
+        subgraph DB ["💾 Offline Data Storage"]
+            SQLite[("🗄️ Local SQLite DB\n• PYQs & Resources\n• Test Attempts\n• Local Chat Logs\n• User Profiles")]:::device
+            SyncQueue[("🔄 Sync Queue Table\n(Pending Operations)")]:::device
+        end
+        
+        Conn["🌐 Connectivity Service\n(Network Monitor)"]:::device
+    end
+
+    %% -------------------------------------------------------
+    %% 4. CLOUD INFRASTRUCTURE & BACKEND
+    %% -------------------------------------------------------
+    subgraph CLOUD ["☁️ Cloud Backend & Services"]
+        Firebase[("🔥 Firebase Cloud\n• Firestore Database\n• User Accounts\n• Real-Time Sprints\n• Leaderboard Data")]:::cloud
+        Server["🌐 DB Bridge Server\n(Weekly Scheduler Node.js)"]:::cloud
+        Twilio["📲 Twilio Gateway\n(SMS Proxy)"]:::cloud
+    end
+
+    Parent((👩‍👦 Parent)):::parent
+
+    %% -------------------------------------------------------
+    %% ARCHITECTURAL FLOW CONNECTIONS (START-TO-END)
+    %% -------------------------------------------------------
+    
+    %% Phase 1: User Interactions
+    Student -->|1. Interacts / Takes Test / Chats| UI
+    
+    %% Phase 2: On-device Logic execution
+    UI -->|2a. Scan image| OCR
+    OCR -->|Extract text| ATE
+    UI -->|2b. Query analytics| ATE
+    UI -->|2c. Award XP & Streaks| GS
+    UI -->|2d. Chat Input| Saathi
+    
+    %% Phase 3: Local SQLite Reads & Writes
+    ATE -->|Query performance| SQLite
+    Saathi -->|Read memory| SQLite
+    GS -->|Update XP / Streaks| SQLite
+    
+    %% Operations are queued for offline resilience
+    SQLite -->|3a. Data Modified| SyncQueue
+    
+    %% Phase 4: Sync Flow
+    Conn -->|4a. Poll network status| UI
+    SyncQueue -->|4b. If ONLINE: Push Delta| Firebase
+    Firebase -->|4c. Acknowledge sync| SyncQueue
+    
+    %% Phase 5: Live Interactions via Cloud
+    UI -->|5a. Multiplayer lobby / Clan chat| Firebase
+    Firebase -->|5b. Push updates to members| UI
+    
+    %% Phase 6: Parent Loop (Start to End Notification)
+    Server -->|6a. Weekly Cron Pull stats| Firebase
+    Server -->|6b. Trigger if accuracy < 50%| Twilio
+    Twilio -->|6c. Deliver weekly performance SMS| Parent
+
+    %% Styling Application
+    class Student student;
+    class Parent parent;

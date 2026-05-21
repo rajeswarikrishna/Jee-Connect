@@ -1,0 +1,185 @@
+classDiagram
+    title JEE Connect — Service Layer Class Diagram
+
+    %% ═══════════════════════════════════════
+    %% DATABASE LAYER
+    %% ═══════════════════════════════════════
+
+    class Database {
+        <<interface>>
+        +execAsync(sql: string) Promise~void~
+        +getAllAsync(sql: string, params?: any[]) Promise~T[]~
+        +getFirstAsync(sql: string, params?: any[]) Promise~T | null~
+        +runAsync(sql: string, params?: any[]) Promise~Result~
+        +closeAsync() Promise~void~
+    }
+
+    class DatabaseManager {
+        -dbInstance: Database
+        -isWeb: boolean
+        -webStore: Record~string, any[]~
+        +getDatabase() Promise~Database~
+        +initializeDatabase() Promise~void~
+        +resetDatabase() Promise~void~
+        +closeDatabase() Promise~void~
+        -seedDatabase(db: Database) Promise~void~
+        -seedWebStore() Promise~void~
+        -saveWebStore() void
+        -createWebFallbackDb() Database
+    }
+
+    %% ═══════════════════════════════════════
+    %% SERVICE LAYER
+    %% ═══════════════════════════════════════
+
+    class GamificationService {
+        +awardXP(userEmail: string, action: string, amount: number) Promise~void~
+        +getTotalXP(userEmail: string) Promise~number~
+        +getXPForToday(userEmail: string) Promise~number~
+        +getWeeklyXP(userEmail: string) Promise~number~
+        +getLevel(totalXP: number) LevelInfo
+        +recordDailyActivity(userEmail: string, xp: number, questions: number, tests: number) Promise~void~
+        +getStreakInfo(userEmail: string) Promise~StreakInfo~
+        +getStreakEmoji(streak: number) string
+        +getAchievements(userEmail: string) Promise~AchievementWithStatus[]~
+        +unlockAchievement(userEmail: string, achievementId: string) Promise~UnlockResult~
+        +checkAndUnlockAchievements(userEmail: string) Promise~UnlockResult[]~
+        +checkPerfectScore(userEmail: string, correct: number, total: number) Promise~UnlockResult?~
+        +getDailyChallenge() Promise~DailyChallenge?~
+        +isDailyChallengeSolved(userEmail: string) Promise~boolean~
+        +doSpin(userEmail: string) Promise~SpinReward~
+        +getFocusTodayChapter(userEmail: string) Promise~FocusChapter?~
+        +saveSaathiMemory(userEmail: string, key: string, value: string) Promise~void~
+        +getSaathiMemory(userEmail: string, key: string) Promise~string?~
+    }
+
+    class AdaptiveTestService {
+        +generateAdaptiveTest(userEmail: string, subject?: string) Promise~AdaptiveTest~
+        +generateRetakeTest(userEmail: string, attemptId: string) Promise~RetakeTest~
+        -getWeaknessProfile(userEmail: string) Promise~WeaknessProfile~
+        -selectQuestionsFromWeakChapters(weakChapters: Chapter[], count: number) Promise~Question[]~
+        -buildTestFromQuestions(questions: Question[], title: string) Promise~string~
+    }
+
+    class AnalyticsService {
+        +getStudentDashboard(userEmail: string) Promise~DashboardData~
+        +getWeaknessHeatmap(userEmail: string) Promise~HeatmapEntry[]~
+        +getQuickStats(userEmail: string) Promise~QuickStats~
+        +getParentReport(studentEmail: string) Promise~ParentReport~
+        +getSubjectBreakdown(userEmail: string) Promise~SubjectBreakdown[]~
+        +getImprovementTrend(userEmail: string) Promise~TrendPoint[]~
+    }
+
+    class SyncService {
+        -isSyncing: boolean
+        +syncNow() Promise~SyncResult~
+        +queueForSync(tableName: string, recordId: string, action: string, payload: any) Promise~void~
+        +getPendingCount() Promise~number~
+        -pushToFirebase(records: SyncRecord[]) Promise~void~
+        -markAsSynced(ids: string[]) Promise~void~
+    }
+
+    class ConnectivityService {
+        -isOnline: boolean
+        -listeners: Function[]
+        +checkConnectivity() Promise~boolean~
+        +getIsOnline() boolean
+        +addListener(callback: Function) void
+        +removeListener(callback: Function) void
+        -startMonitoring() void
+    }
+
+    class OCRService {
+        +recognizeText(imageUri: string) Promise~string~
+        +searchQuestionByText(text: string) Promise~Question[]~
+        -preprocessImage(uri: string) Promise~string~
+    }
+
+    class DownloadManager {
+        +downloadResource(resourceId: string) Promise~void~
+        +pauseDownload(resourceId: string) Promise~void~
+        +resumeDownload(resourceId: string) Promise~void~
+        +getDownloadProgress(resourceId: string) Promise~Progress~
+        +getQueueStatus() Promise~QueueItem[]~
+    }
+
+    class LiveSprintService {
+        +createClan(name: string, icon: string, ownerName: string) Promise~string~
+        +joinClan(clanId: string, userName: string) Promise~void~
+        +startSprint(clanId: string, testId: string) Promise~void~
+        +submitSprintResult(clanId: string, userName: string, score: number) Promise~void~
+        +getLeaderboard(clanId: string) Promise~LeaderboardEntry[]~
+        +sendClanMessage(clanId: string, userName: string, message: string) Promise~void~
+        +getClanMessages(clanId: string) Promise~ClanMessage[]~
+    }
+
+    %% ═══════════════════════════════════════
+    %% STATE MANAGEMENT
+    %% ═══════════════════════════════════════
+
+    class AppStore {
+        <<Zustand Store>>
+        +currentUser: User | null
+        +currentXP: number
+        +currentStreak: number
+        +isOnline: boolean
+        +login(email: string, password: string) Promise~boolean~
+        +register(name: string, email: string, password: string) Promise~boolean~
+        +logout() void
+        +refreshXP() Promise~void~
+        +refreshStreak() Promise~void~
+        +setOnline(status: boolean) void
+    }
+
+    %% ═══════════════════════════════════════
+    %% DATA TYPES
+    %% ═══════════════════════════════════════
+
+    class StreakInfo {
+        <<interface>>
+        +currentStreak: number
+        +longestStreak: number
+        +todayActive: boolean
+        +lastActiveDate: string | null
+    }
+
+    class SpinReward {
+        <<interface>>
+        +type: string
+        +label: string
+        +value: number
+        +message: string
+    }
+
+    class XPEvent {
+        <<interface>>
+        +action: string
+        +amount: number
+    }
+
+    %% ═══════════════════════════════════════
+    %% RELATIONSHIPS
+    %% ═══════════════════════════════════════
+
+    DatabaseManager ..|> Database : implements
+    DatabaseManager --> Database : creates instance
+
+    GamificationService --> Database : reads/writes via
+    AdaptiveTestService --> Database : reads/writes via
+    AnalyticsService --> Database : reads via
+    SyncService --> Database : reads/writes via
+    OCRService --> Database : reads via
+    DownloadManager --> Database : reads/writes via
+    LiveSprintService --> Database : reads/writes via
+
+    AnalyticsService --> GamificationService : getStreakInfo
+    AdaptiveTestService --> AnalyticsService : getWeaknessHeatmap
+    GamificationService --> AnalyticsService : getFocusTodayChapter
+
+    SyncService --> ConnectivityService : checks online status
+    AppStore --> GamificationService : refreshXP, refreshStreak
+    AppStore --> ConnectivityService : monitors network
+
+    GamificationService --> StreakInfo : returns
+    GamificationService --> SpinReward : returns
+    GamificationService --> XPEvent : uses

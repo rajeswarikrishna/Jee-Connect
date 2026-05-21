@@ -1,0 +1,115 @@
+stateDiagram-v2
+    title JEE Connect — State Transition Diagrams
+
+    %% ═══════════════════════════════════════════
+    %% STATE MACHINE 1: EXAM PROCTORING
+    %% ═══════════════════════════════════════════
+
+    state "🛡️ Exam Proctoring State Machine" as Proctoring {
+
+        [*] --> Idle : Student opens test screen
+
+        Idle --> FullscreenActive : Start Test button pressed
+        note right of FullscreenActive : Fullscreen mode activated
+        note right of FullscreenActive : Timer countdown begins
+
+        FullscreenActive --> Answering : Test loaded successfully
+
+        state "📝 Answering Questions" as Answering {
+            [*] --> ViewingQuestion
+            ViewingQuestion --> SelectingOption : Taps option / enters value
+            SelectingOption --> ViewingQuestion : Navigates to next question
+            ViewingQuestion --> ReviewMode : Taps Review button
+            ReviewMode --> ViewingQuestion : Returns to question
+        }
+
+        Answering --> TabSwitchWarning : Tab switch / App background detected
+        TabSwitchWarning --> Answering : Student returns (violations < 3)
+        note right of TabSwitchWarning : tab_violations++ counter incremented
+
+        TabSwitchWarning --> Disqualified : violations >= 3
+        note right of Disqualified : is_disqualified = 1
+        note right of Disqualified : Test auto-submitted with current answers
+
+        Answering --> Submitting : Submit button OR Timer expires
+        Submitting --> Scoring : Calculate score, correct, wrong
+        Scoring --> ResultScreen : Display results + XP earned
+
+        Disqualified --> ResultScreen : Show DQ result (score = 0)
+
+        ResultScreen --> [*] : Return to dashboard
+    }
+
+    %% ═══════════════════════════════════════════
+    %% STATE MACHINE 2: OFFLINE DATA SYNC
+    %% ═══════════════════════════════════════════
+
+    state "🔄 Offline-First Sync State Machine" as SyncMachine {
+
+        [*] --> MonitoringConnectivity
+
+        MonitoringConnectivity --> Online : Network available
+        MonitoringConnectivity --> Offline : No network
+
+        state "📴 Offline Mode" as Offline {
+            [*] --> LocalOperation
+            LocalOperation --> QueuedForSync : Data written to SQLite
+            QueuedForSync --> LocalOperation : More operations
+            note right of QueuedForSync : INSERT INTO sync_queue
+            note right of QueuedForSync : synced = 0, payload = JSON
+        }
+
+        state "🌐 Online Mode" as Online {
+            [*] --> CheckingQueue
+            CheckingQueue --> DeltaUpload : Pending records found
+            CheckingQueue --> Idle_Online : Queue empty
+
+            DeltaUpload --> PushingToFirebase : Send batch to cloud
+            PushingToFirebase --> MarkingSynced : Firebase confirms
+            note right of MarkingSynced : UPDATE sync_queue SET synced = 1
+
+            MarkingSynced --> CheckingQueue : Check for more
+            PushingToFirebase --> RetryQueue : Upload failed
+            RetryQueue --> PushingToFirebase : Retry (sync_attempts++)
+            RetryQueue --> Idle_Online : Max retries exceeded
+
+            Idle_Online --> CheckingQueue : New local data written
+        }
+
+        Offline --> Online : Connectivity restored
+        Online --> Offline : Connection lost
+
+        Online --> [*] : App closed
+        Offline --> [*] : App closed
+    }
+
+    %% ═══════════════════════════════════════════
+    %% STATE MACHINE 3: DAILY STREAK LIFECYCLE
+    %% ═══════════════════════════════════════════
+
+    state "🔥 Streak Lifecycle" as StreakMachine {
+
+        [*] --> NoStreak : New user (0 days)
+
+        NoStreak --> Day1 : First activity (test/chat/challenge)
+        note right of Day1 : daily_streaks record created
+
+        Day1 --> Growing : Next day activity recorded
+        note right of Growing : streak count increases
+
+        Growing --> Growing : Consecutive day activity
+        Growing --> StreakBroken : Missed a day (no activity)
+        note left of StreakBroken : streak resets to 0
+
+        StreakBroken --> Day1 : New activity after break
+
+        Growing --> ShieldProtected : Streak Shield active (from Daily Spin)
+        ShieldProtected --> Growing : Shield absorbs 1 missed day
+        ShieldProtected --> StreakBroken : Shield expired + missed day
+
+        Growing --> WeekWarrior : streak >= 7 days
+        note right of WeekWarrior : Achievement unlocked! +100 XP
+
+        WeekWarrior --> Growing : Continue streak
+        WeekWarrior --> StreakBroken : Missed a day
+    }

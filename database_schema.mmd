@@ -1,0 +1,226 @@
+erDiagram
+    title JEE Connect — Database Schema (Entity Relationship Diagram)
+
+    users {
+        TEXT id PK "Unique user ID"
+        TEXT email UK "User email (unique)"
+        TEXT name "Display name"
+        TEXT password "Hashed password"
+        TEXT created_at "Registration timestamp"
+    }
+
+    subjects {
+        TEXT id PK "e.g. physics, chemistry"
+        TEXT name "Subject name"
+        TEXT icon "Emoji icon"
+        TEXT color "Hex color code"
+        INT order_num "Display order"
+    }
+
+    units {
+        TEXT id PK "e.g. phy-mechanics"
+        TEXT subject_id FK "References subjects.id"
+        TEXT name "Unit name"
+        INT order_num "Display order"
+    }
+
+    chapters {
+        TEXT id PK "e.g. phy-mech-kinematics"
+        TEXT unit_id FK "References units.id"
+        TEXT name "Chapter name"
+        INT order_num "Display order"
+        TEXT summary "Chapter summary"
+        INT is_downloaded "0 or 1"
+    }
+
+    questions {
+        TEXT id PK "Question ID"
+        TEXT chapter_id FK "References chapters.id"
+        INT year "PYQ year (2019-2025)"
+        TEXT shift "Morning or Evening"
+        TEXT question_type "mcq, multi_answer, numerical"
+        TEXT question_text "Question content"
+        TEXT options "JSON array of options"
+        TEXT correct_answers "JSON array of answers"
+        TEXT solution_text "Step-by-step solution"
+        INT difficulty "1 (Easy) to 5 (Hard)"
+        REAL marks "Positive marks (default 4)"
+        REAL negative_marks "Penalty (default -1)"
+    }
+
+    resources {
+        TEXT id PK "Resource ID"
+        TEXT chapter_id FK "References chapters.id"
+        TEXT title "Resource title"
+        TEXT type "textbook, notes, video, formula_sheet"
+        TEXT content "Inline content text"
+        INT size_bytes "File size"
+        INT is_downloaded "0 or 1"
+    }
+
+    tests {
+        TEXT id PK "Test ID"
+        TEXT title "Test display name"
+        TEXT description "Test description"
+        INT duration_min "Duration in minutes"
+        REAL total_marks "Maximum marks"
+        INT total_questions "Question count"
+        TEXT test_type "full, subject, chapter, custom"
+        TEXT user_email FK "Creator email (adaptive tests)"
+    }
+
+    test_questions {
+        TEXT test_id FK "References tests.id"
+        TEXT question_id FK "References questions.id"
+        INT order_num "Question order in test"
+    }
+
+    test_attempts {
+        TEXT id PK "Attempt ID"
+        TEXT test_id FK "References tests.id"
+        TEXT user_email FK "References users.email"
+        TEXT started_at "Start timestamp"
+        TEXT ended_at "End timestamp"
+        TEXT status "in_progress, completed, abandoned"
+        TEXT answers "JSON map of answers"
+        REAL score "Calculated score"
+        INT correct_count "Right answers"
+        INT wrong_count "Wrong answers"
+        INT tab_violations "Proctoring violations"
+        INT is_disqualified "0 or 1"
+        INT xp_awarded "XP given for this attempt"
+    }
+
+    chat_messages {
+        TEXT id PK "Message ID"
+        TEXT user_email FK "References users.email"
+        TEXT role "user, assistant, system"
+        TEXT content "Message text"
+        REAL sentiment_score "Emotional sentiment"
+        TEXT language "en, hi, ta, te, bn, mr"
+        TEXT timestamp "Message time"
+    }
+
+    sync_queue {
+        TEXT id PK "Queue entry ID"
+        TEXT table_name "Target table"
+        TEXT record_id "Record being synced"
+        TEXT action "insert, update, delete"
+        TEXT payload "JSON data payload"
+        INT synced "0 = pending, 1 = synced"
+        INT sync_attempts "Retry count"
+    }
+
+    user_settings {
+        TEXT key PK "Setting key"
+        TEXT value "Setting value"
+        TEXT updated_at "Last updated"
+    }
+
+    daily_streaks {
+        TEXT id PK "Streak record ID"
+        TEXT user_email FK "References users.email"
+        TEXT date "YYYY-MM-DD"
+        INT xp_earned "XP earned that day"
+        INT questions_solved "Questions solved"
+        INT tests_completed "Tests completed"
+    }
+
+    user_xp_log {
+        TEXT id PK "XP log entry ID"
+        TEXT user_email FK "References users.email"
+        TEXT action "XP source action"
+        INT xp_earned "XP amount"
+        TEXT created_at "Timestamp"
+    }
+
+    achievements {
+        TEXT id PK "Achievement ID"
+        TEXT title "Badge title"
+        TEXT description "How to unlock"
+        TEXT icon "Emoji icon"
+        TEXT category "general, streak, test, xp"
+        INT xp_reward "XP for unlocking"
+    }
+
+    user_achievements {
+        TEXT id PK "Record ID"
+        TEXT user_email FK "References users.email"
+        TEXT achievement_id FK "References achievements.id"
+        TEXT unlocked_at "Unlock timestamp"
+    }
+
+    saathi_memory {
+        TEXT id PK "Memory ID"
+        TEXT user_email FK "References users.email"
+        TEXT key "Memory key"
+        TEXT value "Memory value"
+        TEXT updated_at "Last updated"
+    }
+
+    study_clans {
+        TEXT id PK "Clan ID"
+        TEXT name "Clan name"
+        TEXT icon "Clan emoji"
+        TEXT owner_name "Creator name"
+        INT member_count "Member count"
+        REAL weekly_score "Weekly XP score"
+        TEXT planned_sprint_status "none, planning, active"
+    }
+
+    clan_members {
+        TEXT clan_id FK "References study_clans.id"
+        TEXT user_name "Member name"
+        TEXT role "owner, member"
+        TEXT joined_at "Join timestamp"
+    }
+
+    parent_access {
+        TEXT id PK "Access record ID"
+        TEXT parent_phone "Parent phone number"
+        TEXT student_name "Student name"
+        TEXT access_code "Dashboard access code"
+        INT sms_enabled "1 = alerts on"
+        TEXT last_alert_sent "Last SMS timestamp"
+    }
+
+    doubt_marketplace {
+        TEXT id PK "Doubt ID"
+        TEXT question_text "Doubt question"
+        TEXT subject "Subject tag"
+        TEXT posted_by "Poster name"
+        INT answers_count "Answer count"
+        INT is_resolved "0 or 1"
+    }
+
+    doubt_answers {
+        TEXT id PK "Answer ID"
+        TEXT doubt_id FK "References doubt_marketplace.id"
+        TEXT answer_text "Answer content"
+        TEXT answered_by "Answerer name"
+        INT upvotes "Upvote count"
+        INT is_accepted "0 or 1"
+    }
+
+    %% ─── Relationships ───
+
+    subjects ||--o{ units : "has many"
+    units ||--o{ chapters : "has many"
+    chapters ||--o{ questions : "has many"
+    chapters ||--o{ resources : "has many"
+
+    tests ||--o{ test_questions : "contains"
+    questions ||--o{ test_questions : "included in"
+    tests ||--o{ test_attempts : "attempted via"
+
+    users ||--o{ test_attempts : "takes"
+    users ||--o{ chat_messages : "sends"
+    users ||--o{ daily_streaks : "tracks"
+    users ||--o{ user_xp_log : "earns"
+    users ||--o{ user_achievements : "unlocks"
+    users ||--o{ saathi_memory : "remembers"
+
+    achievements ||--o{ user_achievements : "unlocked by"
+
+    study_clans ||--o{ clan_members : "has"
+    doubt_marketplace ||--o{ doubt_answers : "has"

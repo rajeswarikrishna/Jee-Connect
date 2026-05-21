@@ -1,0 +1,96 @@
+sequenceDiagram
+    title JEE Connect — Test Taking, Scoring & Parent SMS Alert Flow
+
+    actor Student
+    participant UI as 📱 JEE Connect App
+    participant ATE as 🎯 AdaptiveTestEngine
+    participant DB as 💾 Local SQLite
+    participant GS as 🔥 GamificationService
+    participant Sync as 🔄 SyncService
+    participant Firebase as ☁️ Firebase Cloud
+    participant Bridge as 🌐 DB Bridge Server
+    participant Twilio as 📲 Twilio SMS Gateway
+    actor Parent
+
+    Note over Student, Parent: === Phase 1: Adaptive Test Generation ===
+
+    Student->>UI: Opens "Smart Practice"
+    UI->>ATE: generateAdaptiveTest(userEmail)
+    ATE->>DB: SELECT chapter accuracies<br/>FROM test_attempts
+    DB-->>ATE: weakness heatmap data
+    ATE->>ATE: Sort chapters by accuracy (weakest first)
+    ATE->>DB: SELECT questions WHERE chapter_id<br/>IN weakest chapters
+    DB-->>ATE: filtered PYQ questions
+    ATE->>DB: INSERT INTO tests (adaptive test)
+    ATE-->>UI: testId, questions[]
+
+    Note over Student, Parent: === Phase 2: Exam with Proctoring ===
+
+    Student->>UI: Starts Test
+    UI->>UI: Enter Fullscreen Mode
+    UI->>UI: Start Timer (countdown)
+
+    loop For Each Question
+        Student->>UI: Selects answer / enters numerical
+        UI->>UI: Record answer + time_per_question
+    end
+
+    alt Tab Switch Detected
+        UI->>UI: tab_violations++
+        UI->>UI: Show Warning Overlay
+        alt violations >= 3
+            UI->>DB: UPDATE test_attempts SET<br/>is_disqualified = 1
+            UI-->>Student: ❌ Disqualified!
+        end
+    end
+
+    Student->>UI: Submits Test / Timer Expires
+
+    Note over Student, Parent: === Phase 3: Scoring & XP ===
+
+    UI->>DB: Get correct_answers for all questions
+    DB-->>UI: correct answers + marks + negative_marks
+    UI->>UI: Calculate score, correct_count, wrong_count
+    UI->>DB: UPDATE test_attempts SET<br/>score, status='completed'
+
+    UI->>GS: awardXP(test_complete + per-question XP)
+    GS->>DB: INSERT INTO user_xp_log
+    GS->>DB: INSERT/UPDATE daily_streaks (today)
+    GS->>GS: checkAndUnlockAchievements()
+
+    alt Perfect Score
+        GS->>DB: Unlock "Perfect Score" badge 🏅
+        GS-->>UI: Achievement unlocked!
+    end
+
+    UI-->>Student: 📊 Results: Score, Accuracy, XP earned
+
+    Note over Student, Parent: === Phase 4: Offline Sync Queue ===
+
+    UI->>DB: INSERT INTO sync_queue<br/>(test_attempt payload)
+    Sync->>Sync: Check connectivity
+
+    alt Online
+        Sync->>Firebase: Delta sync — push pending records
+        Firebase-->>Sync: Sync confirmed ✅
+        Sync->>DB: UPDATE sync_queue SET synced = 1
+    else Offline
+        Sync->>DB: Queue remains pending
+        Note over Sync: Will retry on next<br/>connectivity change
+    end
+
+    Note over Student, Parent: === Phase 5: Weekly Parent SMS Alert ===
+
+    Bridge->>Bridge: Sunday 10 PM Scheduler Trigger
+    Bridge->>Firebase: Fetch all users + test_attempts
+    Firebase-->>Bridge: User data + attempt history
+
+    Bridge->>Bridge: Calculate weekly stats:<br/>tests_taken, accuracy, study_hours
+
+    alt Accuracy < 50% (Critical)
+        Bridge->>Twilio: Send SMS to parent phone
+        Note over Twilio: "Your child completed 3 tests<br/>with 42% accuracy this week.<br/>2.5 hours studied."
+        Twilio-->>Parent: 📱 SMS Alert Delivered
+    else Accuracy >= 50%
+        Bridge->>Bridge: No alert needed (student performing well)
+    end
